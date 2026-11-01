@@ -119,10 +119,10 @@ class AdvisoryService:
                 title="PHP request handling security advisory",
                 severity="critical",
                 summary="Patch the affected PHP runtime promptly.",
-                source_kind="official",
+                source_kind="demo",
                 source_url="https://www.php.net/archive/2026.php",
-                verified=True,
-                generated_by="manual",
+                verified=False,
+                generated_by="fixture",
                 created_at=now_iso,
             )
         ]

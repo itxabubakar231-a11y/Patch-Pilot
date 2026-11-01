@@ -3,12 +3,17 @@ Unit and Integration Tests for PatchPilot Advisory & Multilingual Module.
 Owned by Member 4 (Team B).
 Tests schema validation, deterministic multilingual fixtures, and API endpoints.
 """
+import os
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
-from app.api.advisories import router as advisories_router
+from app.api.advisories import (
+    AdminAuthException,
+    admin_auth_exception_handler,
+    router as advisories_router,
+)
 from app.schemas.advisory import (
     AdvisoryAnalyzeRequest,
     AdvisoryAnalyzeResponse,
@@ -20,12 +25,20 @@ from app.services.advisory_service import (
     MULTILINGUAL_FIXTURES,
 )
 
-# Test application mounting the advisory router in isolation
-test_app = FastAPI()
-test_app.include_router(advisories_router)
-client = TestClient(test_app)
+# Test application mounting the advisory router in isolation (renamed from test_app)
+app_under_test = FastAPI()
+app_under_test.add_exception_handler(AdminAuthException, admin_auth_exception_handler)
+app_under_test.include_router(advisories_router)
+client = TestClient(app_under_test)
 
-AUTH_HEADER = {"Authorization": "Bearer demo-token"}
+TEST_ADMIN_TOKEN = "patchpilot-test-strong-secret-token-32chars"
+AUTH_HEADER = {"Authorization": f"Bearer {TEST_ADMIN_TOKEN}"}
+
+
+@pytest.fixture(autouse=True)
+def set_env_admin_token(monkeypatch):
+    """Ensure PATCHPILOT_ADMIN_TOKEN is configured with a strong secret for all tests."""
+    monkeypatch.setenv("PATCHPILOT_ADMIN_TOKEN", TEST_ADMIN_TOKEN)
 
 
 # -----------------------------------------------------------------------------
@@ -70,7 +83,7 @@ def test_advisory_request_unsupported_language_rejected():
     with pytest.raises(ValidationError):
         AdvisoryAnalyzeRequest(
             advisory_text="Sample text",
-            languages=["en", "de"],  # 'de' is not permitted
+            languages=["en", "de"],
         )
 
 
@@ -100,6 +113,7 @@ def test_advisory_service_multilingual_fixture():
     assert res.processing_mode == "fixture"
     assert res.advisory.generated_by == "fixture"
     assert res.advisory.verified is False
+    assert res.advisory.source_kind == "demo"
 
     # Check that all 5 requested languages are returned with exact content
     assert len(res.localizations) == 5
@@ -124,32 +138,77 @@ def test_advisory_service_unconfigured_llm_raises_error():
 
 
 def test_advisory_service_list_advisories():
-    """Verify sample list of advisories returns expected schema."""
+    """Verify sample list of advisories uses demo source_kind, verified=False, and generated_by='fixture'."""
     service = AdvisoryService()
     res = service.list_advisories(limit=10, offset=0)
     assert isinstance(res, AdvisoryListResponse)
     assert res.total >= 1
     assert len(res.items) >= 1
-    assert res.items[0].external_id == "CVE-2026-109618"
+    item = res.items[0]
+    assert item.external_id == "CVE-2026-109618"
+    assert item.source_kind == "demo"
+    assert item.verified is False
+    assert item.generated_by == "fixture"
 
 
 # -----------------------------------------------------------------------------
-# 3. API Router Integration Tests
+# 3. API Router Integration & Error Contract Tests
 # -----------------------------------------------------------------------------
 
 def test_api_advisories_unauthorized_without_token():
-    """Verify 401 when no token is provided."""
+    """Verify 401 and exact top-level error JSON when no token is provided."""
     response = client.get("/api/v1/advisories")
     assert response.status_code == 401
+    assert response.json() == {
+        "error": {
+            "code": "UNAUTHORIZED",
+            "message": "Missing or invalid Authorization header.",
+        }
+    }
 
 
 def test_api_advisories_unauthorized_with_bad_token():
-    """Verify 401 when invalid token is provided."""
+    """Verify 401 and exact top-level error JSON when wrong token is provided."""
     response = client.get(
         "/api/v1/advisories",
-        headers={"Authorization": "Bearer wrong-token"},
+        headers={"Authorization": "Bearer wrong-token-xyz"},
     )
     assert response.status_code == 401
+    assert response.json() == {
+        "error": {
+            "code": "UNAUTHORIZED",
+            "message": "Invalid admin token.",
+        }
+    }
+
+
+def test_api_advisories_fail_closed_when_token_unset(monkeypatch):
+    """Verify 401 and fail-closed response when server PATCHPILOT_ADMIN_TOKEN is missing."""
+    monkeypatch.delenv("PATCHPILOT_ADMIN_TOKEN", raising=False)
+    response = client.get("/api/v1/advisories", headers=AUTH_HEADER)
+    assert response.status_code == 401
+    assert response.json() == {
+        "error": {
+            "code": "UNAUTHORIZED",
+            "message": "Management authentication is not configured or token is weak.",
+        }
+    }
+
+
+def test_api_advisories_fail_closed_when_token_weak(monkeypatch):
+    """Verify 401 and fail-closed response when server PATCHPILOT_ADMIN_TOKEN is shorter than 16 chars."""
+    monkeypatch.setenv("PATCHPILOT_ADMIN_TOKEN", "short-token")  # 11 chars < 16
+    response = client.get(
+        "/api/v1/advisories",
+        headers={"Authorization": "Bearer short-token"},
+    )
+    assert response.status_code == 401
+    assert response.json() == {
+        "error": {
+            "code": "UNAUTHORIZED",
+            "message": "Management authentication is not configured or token is weak.",
+        }
+    }
 
 
 def test_api_advisories_get_list_authorized():
@@ -159,7 +218,11 @@ def test_api_advisories_get_list_authorized():
     data = response.json()
     assert "items" in data
     assert "total" in data
-    assert data["items"][0]["external_id"] == "CVE-2026-109618"
+    item = data["items"][0]
+    assert item["external_id"] == "CVE-2026-109618"
+    assert item["source_kind"] == "demo"
+    assert item["verified"] is False
+    assert item["generated_by"] == "fixture"
 
 
 def test_api_advisories_analyze_success():
@@ -179,11 +242,13 @@ def test_api_advisories_analyze_success():
     assert data["is_simulated"] is True
     assert data["processing_mode"] == "fixture"
     assert len(data["localizations"]) == 5
+    assert data["advisory"]["source_kind"] == "demo"
+    assert data["advisory"]["verified"] is False
+    assert data["advisory"]["generated_by"] == "fixture"
 
 
 def test_api_advisories_analyze_validation_error():
     """Verify 422 Unprocessable Entity when request fails schema validation."""
-    # Text exceeds max_length
     payload = {
         "advisory_text": "A" * 12005,
         "languages": ["en"],
@@ -212,4 +277,3 @@ def test_api_advisories_analyze_llm_mode_returns_503():
     assert response.status_code == 503
     data = response.json()
     assert data["error"]["code"] == "LLM_NOT_CONFIGURED"
-

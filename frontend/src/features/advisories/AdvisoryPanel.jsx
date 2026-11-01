@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import LanguageSelector, { SUPPORTED_LANGUAGES } from './LanguageSelector'
-import SpeechControl from './SpeechControl'
+import LanguageSelector, { SUPPORTED_LANGUAGES } from './LanguageSelector.jsx'
+import SpeechControl from './SpeechControl.jsx'
 
 /**
  * AdvisoryPanel Component (Zone 4)

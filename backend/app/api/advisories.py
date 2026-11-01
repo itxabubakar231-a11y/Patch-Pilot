@@ -4,8 +4,9 @@ Owned by Member 4 (Team B).
 Conforms strictly to docs/API.md (Sections 3.H and 3.I).
 """
 import os
+import secrets
 from typing import Optional
-from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request, status
 from fastapi.responses import JSONResponse
 
 from app.schemas.advisory import (
@@ -20,24 +21,62 @@ router = APIRouter(prefix="/api/v1/advisories", tags=["Advisories"])
 # Default advisory service instance (unconfigured LLM for Sprint 1 safe baseline)
 advisory_service = AdvisoryService(llm_configured=False)
 
+MIN_TOKEN_LENGTH = 16
+
+
+class AdminAuthException(HTTPException):
+    """
+    Custom authentication exception returning top-level error envelope
+    conforming strictly to docs/API.md.
+    """
+    def __init__(
+        self,
+        code: str = "UNAUTHORIZED",
+        message: str = "Invalid admin token.",
+        status_code: int = status.HTTP_401_UNAUTHORIZED,
+    ):
+        super().__init__(status_code=status_code, detail=message)
+        self.code = code
+        self.message = message
+
+
+async def admin_auth_exception_handler(_request: Request, exc: AdminAuthException) -> JSONResponse:
+    """Exception handler ensuring exact {"error": {"code": ..., "message": ...}} schema."""
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"error": {"code": exc.code, "message": exc.message}},
+    )
+
 
 def verify_admin_token(authorization: Optional[str] = Header(None)) -> str:
     """
     Local admin token verification dependency.
     Validates Authorization: Bearer <PATCHPILOT_ADMIN_TOKEN>.
-    Designed to integrate smoothly with Member 1's core/auth.py.
+    Fails closed if PATCHPILOT_ADMIN_TOKEN is missing or weak (<16 characters).
+    Uses constant-time comparison via secrets.compare_digest.
     """
-    expected_token = os.getenv("PATCHPILOT_ADMIN_TOKEN", "demo-token")
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(
+    expected_token = os.getenv("PATCHPILOT_ADMIN_TOKEN")
+    if not expected_token or len(expected_token.strip()) < MIN_TOKEN_LENGTH:
+        # Fail closed: refuse access if server environment token is missing or weak
+        raise AdminAuthException(
+            code="UNAUTHORIZED",
+            message="Management authentication is not configured or token is weak.",
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail={"error": {"code": "UNAUTHORIZED", "message": "Missing or invalid admin token."}},
         )
-    token = authorization.split("Bearer ", 1)[1].strip()
-    if token != expected_token:
-        raise HTTPException(
+
+    if not authorization or not authorization.startswith("Bearer "):
+        raise AdminAuthException(
+            code="UNAUTHORIZED",
+            message="Missing or invalid Authorization header.",
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail={"error": {"code": "UNAUTHORIZED", "message": "Invalid admin token."}},
+        )
+
+    token = authorization.split("Bearer ", 1)[1].strip()
+    if not secrets.compare_digest(token, expected_token.strip()):
+        raise AdminAuthException(
+            code="UNAUTHORIZED",
+            message="Invalid admin token.",
+            status_code=status.HTTP_401_UNAUTHORIZED,
         )
     return token
 
@@ -76,4 +115,3 @@ def analyze_advisory(
                 }
             },
         )
-

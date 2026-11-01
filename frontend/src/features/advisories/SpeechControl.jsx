@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 
 /**
  * SpeechControl Component
@@ -10,48 +10,79 @@ export default function SpeechControl({ textToSpeak, languageCode }) {
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [voiceAvailable, setVoiceAvailable] = useState(true)
 
-  useEffect(() => {
-    // Check speech synthesis support in the browser
+  const checkVoices = useCallback(() => {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
       setVoiceAvailable(false)
       return
     }
 
-    const checkVoices = () => {
-      const voices = window.speechSynthesis.getVoices()
-      // Map language codes to BCP 47 locales
-      const localePrefix = languageCode === 'ur-Latn' ? 'ur' : languageCode
-      const hasVoice = voices.some((v) => v.lang.startsWith(localePrefix))
-      setVoiceAvailable(hasVoice || languageCode === 'en')
+    const voices = window.speechSynthesis.getVoices()
+    if (!voices || voices.length === 0) {
+      // Voices not loaded yet; keep voiceAvailable true tentatively until voiceschanged fires
+      setVoiceAvailable(true)
+      return
     }
 
+    // Map language codes to BCP 47 prefixes
+    const localePrefix = languageCode === 'ur-Latn' ? 'en' : languageCode
+    const hasVoice = voices.some((v) => {
+      const vLang = (v.lang || '').toLowerCase()
+      return vLang.startsWith(localePrefix.toLowerCase())
+    })
+
+    setVoiceAvailable(hasVoice)
+  }, [languageCode])
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+      setVoiceAvailable(false)
+      return
+    }
+
+    const synth = window.speechSynthesis
+
+    // Cancel speech and reset state whenever language or text changes
+    synth.cancel()
+    setIsSpeaking(false)
+
     checkVoices()
-    if (window.speechSynthesis.onvoiceschanged !== undefined) {
-      window.speechSynthesis.onvoiceschanged = checkVoices
+
+    if (typeof synth.addEventListener === 'function') {
+      synth.addEventListener('voiceschanged', checkVoices)
+    } else {
+      synth.onvoiceschanged = checkVoices
     }
 
     return () => {
-      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-        window.speechSynthesis.cancel()
+      synth.cancel()
+      setIsSpeaking(false)
+      if (typeof synth.removeEventListener === 'function') {
+        synth.removeEventListener('voiceschanged', checkVoices)
+      } else if (synth.onvoiceschanged === checkVoices) {
+        synth.onvoiceschanged = null
       }
     }
-  }, [languageCode])
+  }, [languageCode, checkVoices])
 
   const handleToggleSpeak = () => {
-    if (!('speechSynthesis' in window) || !textToSpeak) return
+    if (typeof window === 'undefined' || !('speechSynthesis' in window) || !textToSpeak) {
+      return
+    }
+
+    const synth = window.speechSynthesis
 
     if (isSpeaking) {
-      window.speechSynthesis.cancel()
+      synth.cancel()
       setIsSpeaking(false)
       return
     }
 
-    window.speechSynthesis.cancel()
+    synth.cancel()
     const utterance = new SpeechSynthesisUtterance(textToSpeak)
     const localeMap = {
       en: 'en-US',
       ur: 'ur-PK',
-      'ur-Latn': 'en-US', // fallback voice for Roman Urdu
+      'ur-Latn': 'en-US',
       ar: 'ar-SA',
       es: 'es-ES',
     }
@@ -60,7 +91,7 @@ export default function SpeechControl({ textToSpeak, languageCode }) {
     utterance.onend = () => setIsSpeaking(false)
     utterance.onerror = () => setIsSpeaking(false)
 
-    window.speechSynthesis.speak(utterance)
+    synth.speak(utterance)
     setIsSpeaking(true)
   }
 
@@ -86,4 +117,3 @@ export default function SpeechControl({ textToSpeak, languageCode }) {
     </button>
   )
 }
-
