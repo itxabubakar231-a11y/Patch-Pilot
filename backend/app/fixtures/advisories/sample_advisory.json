@@ -1,0 +1,55 @@
+{
+  "_notice": "SIMULATED ADVISORY FIXTURE - For local testing only. Not real-world mitigation advice.",
+  "is_simulated": true,
+  "advisory": {
+    "id": 2,
+    "external_id": null,
+    "title": "Illustrative PHP security notice",
+    "severity": "unknown",
+    "summary": "Review vendor guidance and update the runtime.",
+    "source_kind": "demo",
+    "source_url": null,
+    "verified": false,
+    "generated_by": "fixture",
+    "created_at": "2026-11-01T08:12:00Z"
+  },
+  "localizations": [
+    {
+      "language_code": "en",
+      "title": "Security notice",
+      "summary": "A sample advisory for the local lab simulating PHP runtime risk.",
+      "recommended_action": "Confirm the vendor bulletin and patch the runtime.",
+      "generated_by": "fixture"
+    },
+    {
+      "language_code": "ur",
+      "title": "سیکیورٹی اطلاع",
+      "summary": "یہ مقامی لیب کے لیے ایک نمونہ سیکیورٹی نوٹس ہے۔",
+      "recommended_action": "مستند اطلاع دیکھیں اور سافٹ ویئر اپ ڈیٹ کریں۔",
+      "generated_by": "fixture"
+    },
+    {
+      "language_code": "ur-Latn",
+      "title": "Security Ittila",
+      "summary": "Yeh local lab ke liye aik sample security notice hai.",
+      "recommended_action": "Vendor advisory check karein aur software foran update karein.",
+      "generated_by": "fixture"
+    },
+    {
+      "language_code": "ar",
+      "title": "إشعار أمني",
+      "summary": "هذا إشعار أمني تجريبي مخصص لبيئة المختبر المحلي.",
+      "recommended_action": "تحقق من النشرة الرسمية للمورد وقم بتحديث بيئة التشغيل فوراً.",
+      "generated_by": "fixture"
+    },
+    {
+      "language_code": "es",
+      "title": "Aviso de seguridad",
+      "summary": "Un aviso de muestra para el entorno de laboratorio local.",
+      "recommended_action": "Verifique el boletín oficial del proveedor y actualice el entorno de ejecución.",
+      "generated_by": "fixture"
+    }
+  ],
+  "processing_mode": "fixture"
+}
+
