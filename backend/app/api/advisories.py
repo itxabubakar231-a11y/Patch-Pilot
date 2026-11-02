@@ -14,12 +14,12 @@ from app.schemas.advisory import (
     AdvisoryAnalyzeResponse,
     AdvisoryListResponse,
 )
-from app.services.advisory_service import AdvisoryService, LLMNotConfiguredError
+from app.services.advisory_service import AdvisoryService, LLMError
 
 router = APIRouter(prefix="/api/v1/advisories", tags=["Advisories"])
 
-# Default advisory service instance (unconfigured LLM for Sprint 1 safe baseline)
-advisory_service = AdvisoryService(llm_configured=False)
+# Default singleton advisory service instance
+advisory_service = AdvisoryService()
 
 MIN_TOKEN_LENGTH = 16
 
@@ -101,17 +101,18 @@ def analyze_advisory(
 ):
     """
     Analyze advisory text and return structured summaries and requested localizations.
+    Supports processing_mode='fixture' and processing_mode='llm' (Groq).
     Requires local admin bearer token.
     """
     try:
         return advisory_service.analyze_advisory(request)
-    except LLMNotConfiguredError:
+    except LLMError as exc:
         return JSONResponse(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            status_code=exc.status_code,
             content={
                 "error": {
-                    "code": "LLM_NOT_CONFIGURED",
-                    "message": "Configured LLM provider is not available. Please use processing_mode='fixture'.",
+                    "code": exc.code,
+                    "message": exc.message,
                 }
             },
         )

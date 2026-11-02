@@ -76,3 +76,21 @@ class AdvisoryListResponse(BaseModel):
     limit: int
     offset: int
 
+
+# -----------------------------------------------------------------------------
+# LLM Structured Output Schemas (for validating Groq JSON completions)
+# -----------------------------------------------------------------------------
+
+class LLMLocalizationItem(BaseModel):
+    language_code: SupportedLanguage
+    title: str = Field(..., min_length=1, description="Concise title in the target language.")
+    summary: str = Field(..., min_length=1, description="Plain-language explanation of affected components and risks.")
+    recommended_action: str = Field(..., min_length=1, description="Defensive recommendations (e.g. patch, upgrade).")
+
+
+class LLMAdvisoryAnalysis(BaseModel):
+    title: str = Field(..., min_length=1, description="Overall title summarizing the advisory.")
+    severity: SeverityLevel = Field(default="unknown", description="Severity: critical, high, medium, low, or unknown.")
+    summary: str = Field(..., min_length=1, description="Concise English overview summary.")
+    external_id: Optional[str] = Field(default=None, description="Explicit CVE identifier if mentioned (e.g. CVE-2026-109618), otherwise null.")
+    localizations: List[LLMLocalizationItem] = Field(..., description="List of localizations for requested languages.")
