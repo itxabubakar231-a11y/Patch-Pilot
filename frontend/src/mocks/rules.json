@@ -1,0 +1,21 @@
+{
+  "items": [
+    {
+      "id": 1,
+      "name": "Demo query marker",
+      "matcher_type": "query_param_equals",
+      "match_config": {
+        "name": "demo_attack",
+        "value": "true"
+      },
+      "enabled": true,
+      "human_approved": true,
+      "source_kind": "demo",
+      "replay_passed": false,
+      "rule_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "total": 1,
+  "limit": 50,
+  "offset": 0
+}
