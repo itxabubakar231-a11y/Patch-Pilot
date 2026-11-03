@@ -272,11 +272,25 @@ class AdvisoryService:
             "3. NOT VERIFIED: This analysis is an AI explanation of submitted text, not an authoritative vendor endorsement.\n"
             "4. NO EXPLOIT OR RULE GENERATION: Do not output exploit payloads, bypasses, or firewall blocking rules. "
             "Follow official vendor remediation guidance and avoid suggesting temporary filtering as a complete fix.\n"
-            f"5. LOCALIZATIONS: For EACH requested language code in [{languages_str}], provide:\n"
+            f"5. MULTILINGUAL QUALITY & LOCALIZATION RULES:\n"
+            f"   For EACH requested language code in [{languages_str}], provide exactly one entry with:\n"
             "   - language_code: exact code ('en', 'ur', 'ur-Latn', 'ar', 'es')\n"
             "   - title: concise title in that language\n"
             "   - summary: plain-language explanation of affected components and risks in that language\n"
-            "   - recommended_action: practical defensive recommendations in that language"
+            "   - recommended_action: practical defensive recommendations in that language\n"
+            "   LANGUAGE STANDARDS:\n"
+            "   - 'en': Professional American English.\n"
+            "   - 'ur': Formal Urdu using standard Perso-Arabic script (اردو).\n"
+            "   - 'ur-Latn': Roman Urdu written strictly in Latin script (e.g. 'PHP runtime ko update karein').\n"
+            "   - 'ar': Modern Standard Arabic (العربية الفصحى).\n"
+            "   - 'es': Standard Spanish (Español).\n"
+            "   TECHNICAL TERM PRESERVATION:\n"
+            "   - Preserve all technical terms, CVE identifiers (e.g. CVE-2024-XXXXX), PHP runtime versions (e.g. PHP 8.2.14), "
+            "configuration directives (e.g. memory_limit, disable_functions), file paths, and command names verbatim in Latin/ASCII. "
+            "Do not transliterate or translate technical identifiers into foreign scripts.\n"
+            "   FAITHFUL CONTENT:\n"
+            "   - Never introduce fabricated security findings or unmentioned attack vectors during translation. "
+            "All localized guidance must remain strictly grounded in the submitted advisory text."
         )
 
         user_prompt = f"Advisory text to analyze:\n\n{request.advisory_text}"
@@ -368,6 +382,9 @@ class AdvisoryService:
         # Validate requested localizations strictly against requested languages:
         # Require exactly one localization for every requested language.
         # Reject missing, duplicate or unexpected language codes.
+        if not parsed_llm.localizations:
+            raise LLMInvalidResponseError("LLM response contains an empty localizations list.")
+
         llm_lang_codes = [loc.language_code for loc in parsed_llm.localizations]
 
         if len(llm_lang_codes) != len(set(llm_lang_codes)):
