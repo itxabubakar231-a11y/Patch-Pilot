@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import LanguageSelector, { SUPPORTED_LANGUAGES } from './LanguageSelector.jsx'
 import SpeechControl from './SpeechControl.jsx'
+import { cleanUrlAndTrailingPunct } from './advisoryUtils.js'
+
+export { cleanUrlAndTrailingPunct }
 
 /**
  * Regular expression matching unquoted and quoted technical tokens:
@@ -42,53 +45,6 @@ const TECHNICAL_TOKEN_REGEX = new RegExp(
   'gi'
 )
 
-/**
- * Strips trailing sentence punctuation from URLs while preserving valid URL characters
- * and balanced parentheses or brackets (such as in Wikipedia URLs).
- * Supports standard punctuation as well as Perso-Arabic punctuation (۔،؛؟).
- */
-export function cleanUrlAndTrailingPunct(rawUrl) {
-  let url = rawUrl
-  let trailing = ''
-
-  const punctuationList = [
-    '.', ',', ';', ':', '!', '?',
-    '\u06D4', // Urdu full stop (۔)
-    '\u060C', // Arabic comma (،)
-    '\u061B', // Arabic semicolon (؛)
-    '\u061F', // Arabic question mark (؟)
-    '"', "'", '”', '’', '»'
-  ]
-
-  while (url.length > 0) {
-    const lastChar = url[url.length - 1]
-    if (punctuationList.includes(lastChar)) {
-      trailing = lastChar + trailing
-      url = url.slice(0, -1)
-    } else if (lastChar === ')') {
-      const openCount = (url.match(/\(/g) || []).length
-      const closeCount = (url.match(/\)/g) || []).length
-      if (closeCount > openCount) {
-        trailing = lastChar + trailing
-        url = url.slice(0, -1)
-      } else {
-        break
-      }
-    } else if (lastChar === ']') {
-      const openCount = (url.match(/\[/g) || []).length
-      const closeCount = (url.match(/\]/g) || []).length
-      if (closeCount > openCount) {
-        trailing = lastChar + trailing
-        url = url.slice(0, -1)
-      } else {
-        break
-      }
-    } else {
-      break
-    }
-  }
-  return { url, trailing }
-}
 
 /**
  * Renders localized text with bidirectional isolation (<bdi dir="ltr">)
@@ -383,6 +339,7 @@ export default function AdvisoryPanel({
                 <SpeechControl
                   textToSpeak={`${activeLocalization.title}. ${activeLocalization.summary} ${activeLocalization.recommended_action}`}
                   languageCode={selectedLanguage}
+                  languageLabel={currentLangMeta.label}
                 />
               )}
               <span className="text-[11px] text-slate-500">
