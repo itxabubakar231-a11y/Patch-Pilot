@@ -1,6 +1,164 @@
 import { useState } from 'react'
 import LanguageSelector, { SUPPORTED_LANGUAGES } from './LanguageSelector.jsx'
 import SpeechControl from './SpeechControl.jsx'
+import { cleanUrlAndTrailingPunct } from './advisoryUtils.js'
+
+export { cleanUrlAndTrailingPunct }
+
+/**
+ * Regular expression matching unquoted and quoted technical tokens:
+ * - Backtick code spans (`...`)
+ * - URLs (http:// or https://)
+ * - CVE identifiers (CVE-YYYY-NNNN)
+ * - PHP version numbers (e.g. PHP 8.3, PHP 8.2.14, v8.3.0)
+ * - File paths and config filenames (e.g. /etc/php/..., php.ini)
+ * - Configuration directives & technical identifiers (e.g. memory_limit, disable_functions)
+ */
+const TECHNICAL_TOKEN_REGEX = new RegExp(
+  '(' +
+    '`[^`]+`' +
+    '|' +
+    'https?:\\/\\/[^\\s]+' +
+    '|' +
+    '\\bCVE-\\d{4}-\\d{4,}\\b' +
+    '|' +
+    '\\bPHP\\s+\\d+(?:\\.\\d+)*(?:-[a-zA-Z0-9.]+)?\\b' +
+    '|' +
+    '\\bv\\d+(?:\\.\\d+)*(?:-[a-zA-Z0-9.]+)?\\b' +
+    '|' +
+    '(?<=[\\s(]|^)\\/(?:[a-zA-Z0-9_.-]+\\/)+[a-zA-Z0-9_.-]+' +
+    '|' +
+    '(?<=[\\s(]|^)\\/(?:[a-zA-Z0-9_.-]+\\/)*[a-zA-Z0-9_.-]+\\.[a-zA-Z0-9]+' +
+    '|' +
+    '\\b[a-zA-Z0-9_][\\w.-]*\\.(?:ini|php|conf|log|so|json|ya?ml|xml|sh|txt)\\b' +
+    '|' +
+    '\\b(?:php-fpm|php8\\.[0-9]-fpm)\\b' +
+    '|' +
+    '\\b(?:memory_limit|disable_functions|allow_url_fopen|allow_url_include|open_basedir|display_errors|max_execution_time|post_max_size|upload_max_filesize|auto_prepend_file|auto_append_file)\\b' +
+    '|' +
+    '\\b(?:session|opcache|mysqli|pdo_mysql)\\.[a-z_]+\\b' +
+    '|' +
+    '\\b[a-z][a-z0-9]*(?:_[a-z0-9]+)+\\b' +
+    '|' +
+    '\\b[a-z_][a-z0-9_]*\\(\\)' +
+  ')',
+  'gi'
+)
+
+
+/**
+ * Renders localized text with bidirectional isolation (<bdi dir="ltr">)
+ * for technical tokens (CVEs, PHP versions, config directives, paths, URLs, code spans)
+ * so they remain strictly readable left-to-right inside RTL sentences (Urdu, Arabic).
+ * React text nodes are used exclusively to guarantee complete XSS safety.
+ */
+export function renderLocalizedContent(text) {
+  if (!text || typeof text !== 'string') return text
+
+  const parts = text.split(TECHNICAL_TOKEN_REGEX)
+  if (parts.length === 1) return text
+
+  const elements = []
+  parts.forEach((part, index) => {
+    if (!part) return
+
+    // 1. CVE Identifier (e.g. CVE-2026-109618)
+    if (/^CVE-\d{4}-\d{4,}$/i.test(part)) {
+      elements.push(
+        <bdi
+          key={`cve-${index}`}
+          dir="ltr"
+          className="font-mono font-semibold text-sky-400 bg-sky-950/60 px-1 py-0.5 rounded border border-sky-800/60 inline-block align-baseline"
+        >
+          {part}
+        </bdi>
+      )
+      return
+    }
+
+    // 2. Backtick code span (e.g. `eval()`)
+    if (part.startsWith('`') && part.endsWith('`') && part.length > 2) {
+      elements.push(
+        <bdi key={`code-${index}`} dir="ltr" className="inline-block align-baseline">
+          <code
+            dir="ltr"
+            className="font-mono text-xs px-1.5 py-0.5 rounded bg-slate-800 text-sky-300"
+          >
+            {part.slice(1, -1)}
+          </code>
+        </bdi>
+      )
+      return
+    }
+
+    // 3. URLs (handling trailing sentence punctuation)
+    if (/^https?:\/\//i.test(part)) {
+      const { url, trailing } = cleanUrlAndTrailingPunct(part)
+      elements.push(
+        <bdi
+          key={`url-${index}`}
+          dir="ltr"
+          className="font-mono text-xs text-sky-400 underline inline-block align-baseline"
+        >
+          {url}
+        </bdi>
+      )
+      if (trailing) {
+        elements.push(trailing)
+      }
+      return
+    }
+
+    // 4. PHP version strings (e.g. PHP 8.3, PHP 8.2.14, v8.3)
+    if (/^(?:PHP\s+\d+(?:\.\d+)*(?:-[a-zA-Z0-9.]+)?|v\d+(?:\.\d+)*(?:-[a-zA-Z0-9.]+)?)$/i.test(part)) {
+      elements.push(
+        <bdi
+          key={`phpver-${index}`}
+          dir="ltr"
+          className="font-mono font-semibold text-emerald-400 bg-emerald-950/40 px-1 py-0.5 rounded border border-emerald-800/40 inline-block align-baseline"
+        >
+          {part}
+        </bdi>
+      )
+      return
+    }
+
+    // 5. File paths or filenames (e.g. /etc/php/..., php.ini)
+    if (/^(?:(?:\/(?:[a-zA-Z0-9_.-]+\/)+[a-zA-Z0-9_.-]+|\/(?:[a-zA-Z0-9_.-]+\/)*[a-zA-Z0-9_.-]+\.[a-zA-Z0-9]+)|[a-zA-Z0-9_][\w.-]*\.(?:ini|php|conf|log|so|json|ya?ml|xml|sh|txt))$/i.test(part)) {
+      elements.push(
+        <bdi key={`path-${index}`} dir="ltr" className="inline-block align-baseline">
+          <code
+            dir="ltr"
+            className="font-mono text-xs px-1.5 py-0.5 rounded bg-slate-800/90 text-amber-300"
+          >
+            {part}
+          </code>
+        </bdi>
+      )
+      return
+    }
+
+    // 6. Configuration directives, snake_case identifiers, php-fpm, or function calls
+    if (/^(?:(?:memory_limit|disable_functions|allow_url_fopen|allow_url_include|open_basedir|display_errors|max_execution_time|post_max_size|upload_max_filesize|auto_prepend_file|auto_append_file)|(?:session|opcache|mysqli|pdo_mysql)\.[a-z_]+|(?:php-fpm|php8\.[0-9]-fpm)|[a-z][a-z0-9]*(?:_[a-z0-9]+)+|[a-z_][a-z0-9_]*\(\))$/i.test(part)) {
+      elements.push(
+        <bdi key={`ident-${index}`} dir="ltr" className="inline-block align-baseline">
+          <code
+            dir="ltr"
+            className="font-mono text-xs px-1.5 py-0.5 rounded bg-slate-800/90 text-sky-300"
+          >
+            {part}
+          </code>
+        </bdi>
+      )
+      return
+    }
+
+    // Standard text node (React auto-escapes all text, neutralizing any untrusted HTML-like tags)
+    elements.push(part)
+  })
+
+  return elements
+}
 
 /**
  * AdvisoryPanel Component (Zone 4)
@@ -181,6 +339,7 @@ export default function AdvisoryPanel({
                 <SpeechControl
                   textToSpeak={`${activeLocalization.title}. ${activeLocalization.summary} ${activeLocalization.recommended_action}`}
                   languageCode={selectedLanguage}
+                  languageLabel={currentLangMeta.label}
                 />
               )}
               <span className="text-[11px] text-slate-500">
@@ -191,19 +350,22 @@ export default function AdvisoryPanel({
 
           {/* Localized Body */}
           {activeLocalization ? (
-            <div dir={currentLangMeta.dir} className="space-y-3">
+            <div
+              dir={currentLangMeta.dir}
+              className={`space-y-3 ${currentLangMeta.dir === 'rtl' ? 'text-right' : 'text-left'}`}
+            >
               <h3 className="text-lg font-bold text-white">
-                {activeLocalization.title}
+                {renderLocalizedContent(activeLocalization.title)}
               </h3>
               <p className="text-xs text-slate-300 leading-relaxed">
-                {activeLocalization.summary}
+                {renderLocalizedContent(activeLocalization.summary)}
               </p>
               <div className="mt-4 p-3 rounded-lg bg-sky-500/5 border border-sky-500/20">
                 <span className="block text-[11px] font-semibold text-sky-400 uppercase tracking-wider mb-1">
                   Recommended Action:
                 </span>
                 <p className="text-xs text-slate-200">
-                  {activeLocalization.recommended_action}
+                  {renderLocalizedContent(activeLocalization.recommended_action)}
                 </p>
               </div>
             </div>

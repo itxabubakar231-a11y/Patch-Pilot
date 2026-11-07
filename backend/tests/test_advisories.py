@@ -754,3 +754,249 @@ def test_api_advisories_analyze_llm_rate_limit_returns_429():
         assert data["error"]["code"] == "RATE_LIMIT_EXCEEDED"
     finally:
         default_advisory_service._groq_client = None
+
+
+# =============================================================================
+# 5. Phase 3 — Multilingual Quality & RTL Tests
+# =============================================================================
+
+def test_multilingual_fixture_mode_each_language_individually():
+    """Verify fixture mode returns correct, distinct, non-empty content for each of the 5 languages."""
+    service = AdvisoryService()
+    expected_titles = {
+        "en": "Security notice",
+        "ur": "سیکیورٹی اطلاع",
+        "ur-Latn": "Security Ittila",
+        "ar": "إشعار أمني",
+        "es": "Aviso de seguridad",
+    }
+    for lang, expected_title in expected_titles.items():
+        req = AdvisoryAnalyzeRequest(
+            advisory_text="Test notice",
+            languages=[lang],
+            processing_mode="fixture",
+        )
+        res = service.analyze_advisory(req)
+        assert len(res.localizations) == 1
+        loc = res.localizations[0]
+        assert loc.language_code == lang
+        assert loc.title == expected_title
+        assert loc.generated_by == "fixture"
+        assert len(loc.summary) > 0
+        assert len(loc.recommended_action) > 0
+
+
+def test_multilingual_fixture_mode_all_five_languages_order_preserved():
+    """Verify fixture mode preserves exact custom order for all 5 languages."""
+    service = AdvisoryService()
+    custom_order = ["es", "ar", "ur-Latn", "ur", "en"]
+    req = AdvisoryAnalyzeRequest(
+        advisory_text="Test notice",
+        languages=custom_order,
+        processing_mode="fixture",
+    )
+    res = service.analyze_advisory(req)
+    assert len(res.localizations) == 5
+    assert [loc.language_code for loc in res.localizations] == custom_order
+    for loc in res.localizations:
+        assert loc.generated_by == "fixture"
+
+
+def test_multilingual_groq_mixed_language_technical_content_cve_extracted():
+    """Verify mixed-language advisory text (Urdu/Arabic text with English CVE) correctly extracts CVE."""
+    mock_payload = json.dumps({
+        "title": "پی ایچ پی سیکیورٹی نوٹس",
+        "severity": "high",
+        "summary": "پی ایچ پی رن ٹائم میں CVE-2024-55555 کی وجہ سے میموری کا خطرہ۔",
+        "external_id": "CVE-2024-55555",
+        "localizations": [
+            {
+                "language_code": "ur",
+                "title": "پی ایچ پی سیکیورٹی نوٹس",
+                "summary": "پی ایچ پی 8.3 میں CVE-2024-55555 کی خرابی۔",
+                "recommended_action": "سرور کو PHP 8.3.15 پر اپ گریڈ کریں۔"
+            }
+        ]
+    })
+    mock_client = create_mock_groq_client(mock_payload)
+    service = AdvisoryService(groq_client=mock_client)
+
+    # Mixed Perso-Arabic text with English technical identifier CVE-2024-55555
+    mixed_text = "اہم سیکیورٹی اطلاع: پی ایچ پی 8.3 کے سٹرنگ پارسر میں cve-2024-55555 کا خطرہ سامنے آیا ہے۔"
+    req = AdvisoryAnalyzeRequest(
+        advisory_text=mixed_text,
+        languages=["ur"],
+        processing_mode="llm",
+    )
+    res = service.analyze_advisory(req)
+    assert res.advisory.external_id == "CVE-2024-55555"
+    assert res.advisory.verified is False
+    assert res.advisory.source_kind == "user_supplied"
+    assert len(res.localizations) == 1
+    assert res.localizations[0].language_code == "ur"
+    assert "CVE-2024-55555" in res.localizations[0].summary
+
+
+def test_multilingual_groq_mixed_language_hallucinated_cve_rejected():
+    """Verify that in mixed-language text, an invented CVE not appearing in source text is rejected."""
+    mock_payload = json.dumps({
+        "title": "تحديث أمني",
+        "severity": "critical",
+        "summary": "ثغرة أمنية خطيرة في معالج الذاكرة.",
+        "external_id": "CVE-2024-77777",  # LLM hallucinates this CVE!
+        "localizations": [
+            {
+                "language_code": "ar",
+                "title": "تحديث أمني لـ PHP",
+                "summary": "يوجد خلل في إدارة الذاكرة عند معالجة الطلبات المتزامنة.",
+                "recommended_action": "اتبع إرشادات المورد الرسمية وقم بتحديث PHP فوراً."
+            }
+        ]
+    })
+    mock_client = create_mock_groq_client(mock_payload)
+    service = AdvisoryService(groq_client=mock_client)
+
+    # Arabic text with NO CVE cited
+    arabic_text = "إشعار أمني رسمي: تم اكتشاف ثغرة في معالج النصوص لبيئة تشغيل PHP بدون تعيين رقم تعريفي."
+    req = AdvisoryAnalyzeRequest(
+        advisory_text=arabic_text,
+        languages=["ar"],
+        processing_mode="llm",
+    )
+    res = service.analyze_advisory(req)
+    # Hallucinated CVE must be stripped to None
+    assert res.advisory.external_id is None
+    assert res.advisory.verified is False
+
+
+def test_multilingual_groq_empty_localizations_list_rejected():
+    """Verify that an empty localizations array returned by LLM raises LLMInvalidResponseError."""
+    mock_payload = json.dumps({
+        "title": "Notice",
+        "severity": "low",
+        "summary": "Summary",
+        "external_id": None,
+        "localizations": []
+    })
+    mock_client = create_mock_groq_client(mock_payload)
+    service = AdvisoryService(groq_client=mock_client)
+
+    req = AdvisoryAnalyzeRequest(
+        advisory_text="Notice text",
+        languages=["en"],
+        processing_mode="llm",
+    )
+    with pytest.raises(LLMInvalidResponseError) as exc_info:
+        service.analyze_advisory(req)
+    assert "empty" in str(exc_info.value).lower()
+
+
+def test_multilingual_groq_multiple_missing_languages_rejected():
+    """Verify that when multiple requested languages are missing, error message lists them."""
+    mock_payload = json.dumps({
+        "title": "Notice",
+        "severity": "low",
+        "summary": "Summary",
+        "external_id": None,
+        "localizations": [
+            {"language_code": "en", "title": "EN", "summary": "EN summary", "recommended_action": "EN action"}
+        ]
+    })
+    mock_client = create_mock_groq_client(mock_payload)
+    service = AdvisoryService(groq_client=mock_client)
+
+    req = AdvisoryAnalyzeRequest(
+        advisory_text="Notice text",
+        languages=["en", "ur", "ar"],
+        processing_mode="llm",
+    )
+    with pytest.raises(LLMInvalidResponseError) as exc_info:
+        service.analyze_advisory(req)
+    err_msg = str(exc_info.value).lower()
+    assert "missing" in err_msg
+    assert "ar" in err_msg
+    assert "ur" in err_msg
+
+
+def test_multilingual_groq_multiple_unexpected_languages_rejected():
+    """Verify that when multiple unexpected languages are returned, error message lists them."""
+    mock_payload = json.dumps({
+        "title": "Notice",
+        "severity": "low",
+        "summary": "Summary",
+        "external_id": None,
+        "localizations": [
+            {"language_code": "en", "title": "EN", "summary": "EN", "recommended_action": "EN"},
+            {"language_code": "es", "title": "ES", "summary": "ES", "recommended_action": "ES"},
+            {"language_code": "ar", "title": "AR", "summary": "AR", "recommended_action": "AR"}
+        ]
+    })
+    mock_client = create_mock_groq_client(mock_payload)
+    service = AdvisoryService(groq_client=mock_client)
+
+    req = AdvisoryAnalyzeRequest(
+        advisory_text="Notice text",
+        languages=["en"],
+        processing_mode="llm",
+    )
+    with pytest.raises(LLMInvalidResponseError) as exc_info:
+        service.analyze_advisory(req)
+    err_msg = str(exc_info.value).lower()
+    assert "unexpected" in err_msg
+    assert "ar" in err_msg
+    assert "es" in err_msg
+
+
+def test_api_multilingual_analyze_all_five_languages_fixture():
+    """Verify API endpoint returns all 5 localizations in fixture mode with exact contract."""
+    response = client.post(
+        "/api/v1/advisories/analyze",
+        json={
+            "advisory_text": "Sample PHP security notice.",
+            "languages": ["en", "ur", "ur-Latn", "ar", "es"],
+            "processing_mode": "fixture",
+        },
+        headers=AUTH_HEADER,
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["processing_mode"] == "fixture"
+    assert data["is_simulated"] is True
+    assert len(data["localizations"]) == 5
+    codes = [loc["language_code"] for loc in data["localizations"]]
+    assert codes == ["en", "ur", "ur-Latn", "ar", "es"]
+    for loc in data["localizations"]:
+        assert loc["generated_by"] == "fixture"
+        assert len(loc["title"]) > 0
+        assert len(loc["summary"]) > 0
+        assert len(loc["recommended_action"]) > 0
+
+
+def test_api_multilingual_analyze_all_five_languages_llm_mock():
+    """Verify API endpoint returns all 5 localizations in LLM mode using injected Groq client."""
+    mock_client = create_mock_groq_client(SAMPLE_GROQ_JSON)
+    default_advisory_service._groq_client = mock_client
+
+    try:
+        response = client.post(
+            "/api/v1/advisories/analyze",
+            json={
+                "advisory_text": "PHP Security notice citing CVE-2026-109618 in request handler.",
+                "languages": ["en", "ur", "ur-Latn", "ar", "es"],
+                "processing_mode": "llm",
+            },
+            headers=AUTH_HEADER,
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["processing_mode"] == "llm"
+        assert data["is_simulated"] is False
+        assert data["advisory"]["generated_by"] == "llm"
+        assert data["advisory"]["external_id"] == "CVE-2026-109618"
+        assert len(data["localizations"]) == 5
+        codes = [loc["language_code"] for loc in data["localizations"]]
+        assert codes == ["en", "ur", "ur-Latn", "ar", "es"]
+        for loc in data["localizations"]:
+            assert loc["generated_by"] == "llm"
+    finally:
+        default_advisory_service._groq_client = None
