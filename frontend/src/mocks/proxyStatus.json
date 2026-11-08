@@ -1,0 +1,8 @@
+{
+  "mode": "shadow",
+  "ready_for_enforce": false,
+  "enabled_rule_count": 1,
+  "upstream": "127.0.0.1:8081",
+  "last_replay_at": null,
+  "updated_at": "2026-11-01T08:00:00Z"
+}

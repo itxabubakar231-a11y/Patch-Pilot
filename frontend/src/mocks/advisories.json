@@ -1,0 +1,53 @@
+{
+  "advisory": {
+    "id": 1,
+    "external_id": "DEMO-ADVISORY-001",
+    "title": "Simulated Defensive Advisory (Local Lab Demo)",
+    "severity": "medium",
+    "summary": "Simulated advisory for local testing. Official vendor bulletins must be consulted for runtime fixes.",
+    "source_kind": "demo",
+    "source_url": null,
+    "verified": false,
+    "generated_by": "fixture",
+    "created_at": "2026-11-01T08:12:00Z"
+  },
+  "localizations": [
+    {
+      "language_code": "en",
+      "title": "Simulated Security Notice",
+      "summary": "Simulated demonstration advisory for the local lab environment.",
+      "recommended_action": "Review official vendor bulletins and apply tested software updates.",
+      "generated_by": "fixture"
+    },
+    {
+      "language_code": "ur",
+      "title": "نقلی سیکیورٹی اطلاع (ڈیمو)",
+      "summary": "یہ مقامی تجرباتی لیب کے لیے ایک نقلی سیکیورٹی اطلاع ہے۔",
+      "recommended_action": "سرکاری وینڈر بلیٹن دیکھیں اور ٹیسٹ شدہ سافٹ ویئر اپ ڈیٹس لاگو کریں۔",
+      "generated_by": "fixture"
+    },
+    {
+      "language_code": "ur-Latn",
+      "title": "Simulated Security Ittila (Demo)",
+      "summary": "Yeh local lab test environment ke liye aik simulated security advisory hai.",
+      "recommended_action": "Official vendor bulletin check karein aur tested software updates apply karein.",
+      "generated_by": "fixture"
+    },
+    {
+      "language_code": "ar",
+      "title": "إشعار أمني محاكى (عرض توضيحي)",
+      "summary": "إشعار أمني تجريبي لمحاكاة بيئة الاختبار المعملية المحلية.",
+      "recommended_action": "راجع نشرات البائع الرسمية وقم بتطبيق تحديثات البرامج المختبرة.",
+      "generated_by": "fixture"
+    },
+    {
+      "language_code": "es",
+      "title": "Aviso de seguridad simulado (Demostración)",
+      "summary": "Aviso de seguridad simulado para el entorno de laboratorio local.",
+      "recommended_action": "Revise los boletines oficiales del proveedor y aplique actualizaciones de software comprobadas.",
+      "generated_by": "fixture"
+    }
+  ],
+  "processing_mode": "fixture",
+  "is_simulated": true
+}

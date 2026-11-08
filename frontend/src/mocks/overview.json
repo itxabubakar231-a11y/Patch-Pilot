@@ -1,0 +1,26 @@
+{
+  "environment": "local_lab",
+  "is_simulated": true,
+  "proxy": {
+    "mode": "shadow",
+    "ready_for_enforce": false
+  },
+  "traffic": {
+    "total_requests": 5,
+    "allowed_requests": 3,
+    "shadow_matches": 2,
+    "blocked_requests": 0
+  },
+  "lab": {
+    "upstream": "127.0.0.1:8081",
+    "status": "online",
+    "simulated_stack": "Apache/2.4.52 + PHP/8.2.0"
+  },
+  "advisories": {
+    "total": 1
+  },
+  "scanner": {
+    "status": "not_implemented"
+  },
+  "generated_at": "2026-11-01T08:00:00Z"
+}
