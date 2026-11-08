@@ -9,6 +9,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { getOverview, getApiMode } from '../../services/apiClient.js'
+import GlowCard from '../../components/GlowCard.jsx'
 
 export default function SecurityOverview() {
   const [overview, setOverview] = useState(null)
@@ -338,7 +339,7 @@ export default function SecurityOverview() {
       {/* 4. Primary Telemetry Grid: 4 Top Cards */}
       <section aria-label="Key security indicators" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Proxy Defense Mode */}
-        <div className="rounded-xl border border-slate-800/80 bg-slate-900/40 p-5 shadow-sm flex flex-col justify-between hover:border-slate-700/80 transition">
+        <GlowCard color={proxyMode === 'enforce' ? 'rose' : proxyMode === 'shadow' ? 'amber' : 'slate'}>
           <div>
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
@@ -389,10 +390,10 @@ export default function SecurityOverview() {
               {isReadyForEnforce ? '✓ Ready (Replay Passed)' : '⏳ Replay Required'}
             </span>
           </div>
-        </div>
+        </GlowCard>
 
         {/* Card 2: Total Requests Inspected */}
-        <div className="rounded-xl border border-slate-800/80 bg-slate-900/40 p-5 shadow-sm flex flex-col justify-between hover:border-slate-700/80 transition">
+        <GlowCard color="cyan">
           <div>
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
@@ -417,10 +418,10 @@ export default function SecurityOverview() {
               {formatCount(traffic.allowed_requests)} reqs
             </span>
           </div>
-        </div>
+        </GlowCard>
 
         {/* Card 3: Shadow Matches (Observed) */}
-        <div className="rounded-xl border border-slate-800/80 bg-slate-900/40 p-5 shadow-sm flex flex-col justify-between hover:border-slate-700/80 transition">
+        <GlowCard color="amber">
           <div>
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
@@ -445,10 +446,10 @@ export default function SecurityOverview() {
               {isMockMode ? 'Logged & Forwarded (Fixture)' : 'Logged & Forwarded'}
             </span>
           </div>
-        </div>
+        </GlowCard>
 
         {/* Card 4: Blocked Requests (Enforce) */}
-        <div className="rounded-xl border border-slate-800/80 bg-slate-900/40 p-5 shadow-sm flex flex-col justify-between hover:border-slate-700/80 transition">
+        <GlowCard color="rose">
           <div>
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
@@ -481,7 +482,7 @@ export default function SecurityOverview() {
               )}
             </span>
           </div>
-        </div>
+        </GlowCard>
       </section>
 
       {/* 5. Subsystems, Lab Health, and Architecture Diagnostics */}
