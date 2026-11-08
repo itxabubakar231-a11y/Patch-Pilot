@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import LanguageSelector, { SUPPORTED_LANGUAGES } from './LanguageSelector.jsx'
 import SpeechControl from './SpeechControl.jsx'
+import AIOrb from './AIOrb.jsx'
 import { cleanUrlAndTrailingPunct } from './advisoryUtils.js'
 
 export { cleanUrlAndTrailingPunct }
@@ -45,7 +46,6 @@ const TECHNICAL_TOKEN_REGEX = new RegExp(
   'gi'
 )
 
-
 /**
  * Renders localized text with bidirectional isolation (<bdi dir="ltr">)
  * for technical tokens (CVEs, PHP versions, config directives, paths, URLs, code spans)
@@ -68,7 +68,7 @@ export function renderLocalizedContent(text) {
         <bdi
           key={`cve-${index}`}
           dir="ltr"
-          className="font-mono font-semibold text-sky-400 bg-sky-950/60 px-1 py-0.5 rounded border border-sky-800/60 inline-block align-baseline"
+          className="font-mono font-semibold text-sky-400 bg-sky-950/60 px-1.5 py-0.5 rounded border border-sky-800/60 inline-block align-baseline"
         >
           {part}
         </bdi>
@@ -82,7 +82,7 @@ export function renderLocalizedContent(text) {
         <bdi key={`code-${index}`} dir="ltr" className="inline-block align-baseline">
           <code
             dir="ltr"
-            className="font-mono text-xs px-1.5 py-0.5 rounded bg-slate-800 text-sky-300"
+            className="font-mono text-xs px-1.5 py-0.5 rounded bg-slate-800 text-sky-300 border border-slate-700/60"
           >
             {part.slice(1, -1)}
           </code>
@@ -98,7 +98,7 @@ export function renderLocalizedContent(text) {
         <bdi
           key={`url-${index}`}
           dir="ltr"
-          className="font-mono text-xs text-sky-400 underline inline-block align-baseline"
+          className="font-mono text-xs text-sky-400 underline inline-block align-baseline hover:text-sky-300"
         >
           {url}
         </bdi>
@@ -115,7 +115,7 @@ export function renderLocalizedContent(text) {
         <bdi
           key={`phpver-${index}`}
           dir="ltr"
-          className="font-mono font-semibold text-emerald-400 bg-emerald-950/40 px-1 py-0.5 rounded border border-emerald-800/40 inline-block align-baseline"
+          className="font-mono font-semibold text-emerald-400 bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-800/40 inline-block align-baseline"
         >
           {part}
         </bdi>
@@ -129,7 +129,7 @@ export function renderLocalizedContent(text) {
         <bdi key={`path-${index}`} dir="ltr" className="inline-block align-baseline">
           <code
             dir="ltr"
-            className="font-mono text-xs px-1.5 py-0.5 rounded bg-slate-800/90 text-amber-300"
+            className="font-mono text-xs px-1.5 py-0.5 rounded bg-slate-800/90 text-amber-300 border border-slate-700/60"
           >
             {part}
           </code>
@@ -144,7 +144,7 @@ export function renderLocalizedContent(text) {
         <bdi key={`ident-${index}`} dir="ltr" className="inline-block align-baseline">
           <code
             dir="ltr"
-            className="font-mono text-xs px-1.5 py-0.5 rounded bg-slate-800/90 text-sky-300"
+            className="font-mono text-xs px-1.5 py-0.5 rounded bg-slate-800/90 text-sky-300 border border-slate-700/60"
           >
             {part}
           </code>
@@ -163,12 +163,16 @@ export function renderLocalizedContent(text) {
 /**
  * AdvisoryPanel Component (Zone 4)
  * Provides advisory analysis, multilingual summary display, and user-initiated voice output.
+ * Features futuristic AIOrb state indicator derived honestly from actual request lifecycle.
  * Conforms to docs/DESIGN.md and docs/API.md.
  */
 export default function AdvisoryPanel({
   advisoryData,
   onAnalyze,
   loading = false,
+  requestStatus = 'idle',
+  error = null,
+  completedAnalysis = null,
 }) {
   const [advisoryText, setAdvisoryText] = useState('')
   const [selectedLanguage, setSelectedLanguage] = useState('en')
@@ -176,12 +180,31 @@ export default function AdvisoryPanel({
 
   const currentLangMeta = SUPPORTED_LANGUAGES.find((l) => l.code === selectedLanguage) || {
     dir: 'ltr',
+    label: selectedLanguage,
   }
 
   // Active localization for currently selected language (no fallback to default language)
   const activeLocalization = advisoryData?.localizations?.find(
     (loc) => loc.language_code === selectedLanguage
   ) || null
+
+  // Honest LLM verification: Must have valid data, not simulated, and processing_mode === 'llm'
+  const isActualLlm = Boolean(
+    advisoryData &&
+    !advisoryData.is_simulated &&
+    advisoryData.processing_mode === 'llm'
+  )
+
+  // FIX 2: Derive AIOrb state strictly from component request lifecycle
+  const orbState = loading || requestStatus === 'analyzing'
+    ? 'analyzing'
+    : error || requestStatus === 'error'
+    ? 'error'
+    : requestStatus === 'success'
+    ? 'success'
+    : 'idle'
+
+  const isPreloadedFixture = requestStatus === 'idle' && Boolean(advisoryData)
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -196,22 +219,82 @@ export default function AdvisoryPanel({
     }
   }
 
+  const severity = advisoryData?.advisory?.severity?.toUpperCase() || 'UNKNOWN'
+  const severityBadgeClass =
+    severity === 'CRITICAL'
+      ? 'bg-rose-500/20 text-rose-300 border-rose-500/40 shadow-sm shadow-rose-950/30'
+      : severity === 'HIGH'
+      ? 'bg-orange-500/20 text-orange-300 border-orange-500/40 shadow-sm shadow-orange-950/30'
+      : severity === 'MEDIUM'
+      ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-sm shadow-amber-950/30'
+      : severity === 'LOW'
+      ? 'bg-sky-500/20 text-sky-300 border-sky-500/40 shadow-sm shadow-sky-950/30'
+      : 'bg-slate-800 text-slate-300 border-slate-700'
+
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-6 shadow-sm">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-800">
-        <div>
-          <div className="flex items-center space-x-2">
-            <h2 className="text-xl font-bold text-white tracking-tight">
-              Security Advisory & Intelligence
-            </h2>
-            <span className="text-[11px] px-2 py-0.5 rounded-full font-mono font-semibold bg-sky-500/10 text-sky-400 border border-sky-500/20">
-              {advisoryData?.processing_mode === 'llm' ? 'AI ANALYZED' : 'SIMULATED DEMO'}
-            </span>
+    <div className="rounded-xl border border-slate-800/80 bg-slate-900/50 backdrop-blur-md p-6 shadow-lg shadow-slate-950/30 space-y-6">
+      {/* Header with Futuristic AI Orb */}
+      <div className="flex flex-wrap items-center justify-between gap-4 pb-5 border-b border-slate-800/80">
+        <div className="flex items-center space-x-4">
+          {/* Glowing Futuristic AI Orb */}
+          <AIOrb state={orbState} size="md" />
+
+          <div>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <h2 className="text-xl font-bold text-white tracking-tight">
+                Zone 4 — Security Advisory & AI Intelligence
+              </h2>
+              <span className="text-[10px] px-2.5 py-0.5 rounded-full font-mono font-semibold bg-sky-500/10 text-sky-400 border border-sky-500/30">
+                {isActualLlm ? 'AI ANALYZED (GROQ)' : 'SIMULATED DEMO'}
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 mt-1">
+              Plain-language multilingual translation and actionable hardening guidance for self-hosted PHP servers.
+            </p>
+
+            {/* AI Agent Status Pill (FIX 2) */}
+            <div className="flex items-center space-x-2 mt-1.5">
+              <span className="text-[11px] font-mono text-slate-400">AI Agent:</span>
+              <span
+                className={`text-[10px] font-mono uppercase font-bold px-2 py-0.5 rounded border transition-colors ${
+                  orbState === 'analyzing'
+                    ? 'bg-sky-500/15 text-sky-300 border-sky-500/40 animate-pulse'
+                    : orbState === 'error'
+                    ? 'bg-rose-500/15 text-rose-300 border-rose-500/40'
+                    : orbState === 'success'
+                    ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40'
+                    : 'bg-slate-800 text-slate-400 border-slate-700'
+                }`}
+              >
+                {orbState === 'analyzing'
+                  ? '⚡ ANALYZING ADVISORY'
+                  : orbState === 'error'
+                  ? '⚠️ ANALYSIS FAILED'
+                  : orbState === 'success'
+                  ? (!completedAnalysis?.isSimulated && completedAnalysis?.processingMode === 'llm')
+                    ? '✓ GROQ AI ANALYSIS COMPLETE'
+                    : '✓ DEMO FIXTURE ANALYSIS COMPLETE'
+                  : isPreloadedFixture
+                  ? 'STANDBY (PRELOADED DEMO FIXTURE)'
+                  : 'STANDBY (IDLE)'}
+              </span>
+            </div>
+
+            {/* Accessible screen reader status announcement (FIX 2) */}
+            <div className="sr-only" role="status" aria-live="polite">
+              {orbState === 'analyzing'
+                ? 'AI Security Advisor: Actively analyzing submitted notice...'
+                : orbState === 'error'
+                ? 'AI Security Advisor: Analysis request failed or service unreachable.'
+                : orbState === 'success'
+                ? (!completedAnalysis?.isSimulated && completedAnalysis?.processingMode === 'llm')
+                  ? 'AI Security Advisor: Live Groq AI analysis completed.'
+                  : 'AI Security Advisor: Deterministic fixture analysis completed.'
+                : isPreloadedFixture
+                ? 'AI Security Advisor: Standby. Preloaded local demo fixture available.'
+                : 'AI Security Advisor: Standby and ready for input.'}
+            </div>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
-            Plain-language multilingual translation and actionable hardening guidance for self-hosted PHP servers.
-          </p>
         </div>
 
         {/* Language Selector */}
@@ -222,8 +305,8 @@ export default function AdvisoryPanel({
       </div>
 
       {/* Advisory Submission Form */}
-      <form onSubmit={handleSubmit} className="mb-6">
-        <div className="flex flex-wrap items-center justify-between gap-1 mb-2">
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-1">
           <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
             Paste Security Notice / Advisory Text:
           </label>
@@ -241,11 +324,11 @@ export default function AdvisoryPanel({
         </div>
 
         {processingMode === 'llm' ? (
-          <div className="mb-2 p-2.5 rounded bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-200">
+          <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-200 backdrop-blur-sm shadow-sm">
             <strong>External AI Disclosure:</strong> Live AI analysis transmits submitted text to Groq Cloud API for summarization. <strong>Do not submit passwords, API keys, database credentials, private keys, or confidential internal data.</strong>
           </div>
         ) : (
-          <div className="mb-2 p-2.5 rounded bg-slate-900 border border-slate-800 text-[11px] text-slate-400">
+          <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800 text-[11px] text-slate-400 backdrop-blur-sm shadow-sm">
             <strong>Offline Safe Mode:</strong> Fixture mode evaluates sample data completely offline on this server. No data is sent to an external AI provider.
           </div>
         )}
@@ -260,12 +343,12 @@ export default function AdvisoryPanel({
               : "e.g. PHP Security Release: Updates addressing CVE-2026-109618 released for PHP 8.2 and 8.3..."
           }
           maxLength={12000}
-          className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-sky-500 transition"
+          className="w-full bg-slate-950/80 border border-slate-800 rounded-xl p-3.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500/40 transition shadow-inner"
         />
 
-        <div className="flex flex-wrap items-center justify-between gap-3 mt-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
           <div className="flex items-center space-x-4 text-xs text-slate-400">
-            <label className="flex items-center space-x-1.5 cursor-pointer">
+            <label className="flex items-center space-x-1.5 cursor-pointer hover:text-slate-200 transition">
               <input
                 type="radio"
                 name="mode"
@@ -276,7 +359,7 @@ export default function AdvisoryPanel({
               />
               <span>Deterministic Fixture (Safe)</span>
             </label>
-            <label className="flex items-center space-x-1.5 cursor-pointer">
+            <label className="flex items-center space-x-1.5 cursor-pointer hover:text-slate-200 transition">
               <input
                 type="radio"
                 name="mode"
@@ -292,26 +375,33 @@ export default function AdvisoryPanel({
           <button
             type="submit"
             disabled={loading || !advisoryText.trim()}
-            className="px-4 py-2 rounded-lg bg-sky-500 hover:bg-sky-400 disabled:bg-slate-800 disabled:text-slate-600 text-xs font-bold text-white transition shadow-sm"
+            className="px-4 py-2 rounded-lg bg-sky-500 hover:bg-sky-400 disabled:bg-slate-800 disabled:text-slate-600 text-xs font-bold text-white transition-all duration-150 shadow-md shadow-sky-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
           >
-            {loading ? 'Analyzing...' : 'Analyze Advisory'}
+            {loading ? (
+              <span className="flex items-center space-x-1.5">
+                <span className="animate-spin inline-block">🔄</span>
+                <span>Analyzing...</span>
+              </span>
+            ) : (
+              'Analyze Advisory'
+            )}
           </button>
         </div>
       </form>
 
       {/* Structured Advisory Output Card */}
       {advisoryData ? (
-        <div className="rounded-lg border border-slate-800/80 bg-slate-950/60 p-5">
+        <div className="rounded-xl border border-slate-800/90 bg-slate-950/70 p-5 shadow-xl backdrop-blur-md animate-zone-in space-y-4">
           {/* Mode Distinction Disclaimers */}
           {advisoryData.is_simulated ? (
-            <div className="mb-4 px-3 py-2 rounded bg-sky-500/10 border border-sky-500/20 text-[11px] text-sky-300 flex flex-wrap items-center justify-between gap-1">
+            <div className="px-3.5 py-2.5 rounded-lg bg-sky-500/10 border border-sky-500/25 text-[11px] text-sky-300 flex flex-wrap items-center justify-between gap-1 shadow-sm">
               <span>ℹ️ <strong>Deterministic Demo Fixture:</strong> Displaying pre-canned simulation output. Input text was not processed by live AI.</span>
               <span className="font-mono text-[10px] uppercase font-bold text-sky-400 bg-sky-950/80 px-2 py-0.5 rounded border border-sky-800">
                 Fixture Active
               </span>
             </div>
           ) : (
-            <div className="mb-4 px-3 py-2 rounded bg-emerald-500/10 border border-emerald-500/20 text-[11px] text-emerald-300 flex flex-wrap items-center justify-between gap-1">
+            <div className="px-3.5 py-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/25 text-[11px] text-emerald-300 flex flex-wrap items-center justify-between gap-1 shadow-sm">
               <span>🤖 <strong>AI-Generated Analysis (Groq):</strong> Grounded in submitted text. Not official vendor verification.</span>
               <span className="font-mono text-[10px] uppercase font-bold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800">
                 Groq AI Live
@@ -319,16 +409,16 @@ export default function AdvisoryPanel({
             </div>
           )}
 
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-800/60">
-            <div className="flex items-center space-x-2">
-              <span className="text-xs px-2 py-0.5 rounded font-mono font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                SEVERITY: {advisoryData.advisory?.severity?.toUpperCase() || 'UNKNOWN'}
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-800/80">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={`text-xs px-2.5 py-0.5 rounded font-mono font-bold border ${severityBadgeClass}`}>
+                SEVERITY: {severity}
               </span>
-              <span className="text-xs px-2 py-0.5 rounded font-mono text-slate-400 bg-slate-800 border border-slate-700">
+              <span className="text-xs px-2 py-0.5 rounded font-mono text-slate-300 bg-slate-800 border border-slate-700">
                 MODE: {advisoryData.processing_mode || 'fixture'}
               </span>
               {advisoryData.advisory?.external_id && (
-                <span className="text-xs px-2 py-0.5 rounded font-mono text-sky-300 bg-sky-950 border border-sky-800" dir="ltr">
+                <span className="text-xs px-2.5 py-0.5 rounded font-mono text-sky-300 bg-sky-950 border border-sky-800" dir="ltr">
                   {advisoryData.advisory.external_id}
                 </span>
               )}
@@ -342,7 +432,7 @@ export default function AdvisoryPanel({
                   languageLabel={currentLangMeta.label}
                 />
               )}
-              <span className="text-[11px] text-slate-500">
+              <span className="text-[11px] text-slate-500 hidden sm:inline">
                 Source: {advisoryData.advisory?.source_kind || 'demo'} ({advisoryData.advisory?.generated_by || 'fixture'})
               </span>
             </div>
@@ -352,31 +442,31 @@ export default function AdvisoryPanel({
           {activeLocalization ? (
             <div
               dir={currentLangMeta.dir}
-              className={`space-y-3 ${currentLangMeta.dir === 'rtl' ? 'text-right' : 'text-left'}`}
+              className={`space-y-3 pt-1 ${currentLangMeta.dir === 'rtl' ? 'text-right' : 'text-left'}`}
             >
-              <h3 className="text-lg font-bold text-white">
+              <h3 className="text-lg font-bold text-white tracking-tight">
                 {renderLocalizedContent(activeLocalization.title)}
               </h3>
               <p className="text-xs text-slate-300 leading-relaxed">
                 {renderLocalizedContent(activeLocalization.summary)}
               </p>
-              <div className="mt-4 p-3 rounded-lg bg-sky-500/5 border border-sky-500/20">
+              <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-sky-950/30 to-slate-900/40 border border-sky-500/30 shadow-sm">
                 <span className="block text-[11px] font-semibold text-sky-400 uppercase tracking-wider mb-1">
                   Recommended Action:
                 </span>
-                <p className="text-xs text-slate-200">
+                <p className="text-xs text-slate-200 leading-relaxed">
                   {renderLocalizedContent(activeLocalization.recommended_action)}
                 </p>
               </div>
             </div>
           ) : (
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-500 py-4 text-center">
               No translation available for selected language.
             </p>
           )}
 
-          {/* Technical Note */}
-          <div className="mt-4 pt-3 border-t border-slate-900 text-[11px] text-slate-500 flex items-center justify-between">
+          {/* Technical Note & Timestamp */}
+          <div className="pt-3 border-t border-slate-900 text-[11px] text-slate-500 flex flex-wrap items-center justify-between gap-2">
             <span dir="ltr">
               Generated: {advisoryData.advisory?.created_at || 'Just now'}
             </span>
@@ -386,7 +476,7 @@ export default function AdvisoryPanel({
           </div>
         </div>
       ) : (
-        <div className="rounded-lg border border-dashed border-slate-800 p-8 text-center text-xs text-slate-500">
+        <div className="rounded-xl border border-dashed border-slate-800 p-8 text-center text-xs text-slate-500 bg-slate-950/30">
           Enter an advisory text above or select a sample notice to view localized explanations.
         </div>
       )}
