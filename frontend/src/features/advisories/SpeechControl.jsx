@@ -396,10 +396,10 @@ export default function SpeechControl({ textToSpeak, languageCode, languageLabel
           onClick={handleToggleSpeak}
           aria-label={ariaLabel}
           aria-pressed={isSpeaking}
-          className={`inline-flex items-center space-x-1.5 px-3 py-1 rounded text-xs font-semibold transition focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 ${
+          className={`inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 ${
             isSpeaking
-              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30'
-              : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'
+              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/50 shadow-sm shadow-amber-950/30 hover:bg-amber-500/30'
+              : 'bg-slate-800/90 hover:bg-slate-700/90 text-slate-200 border border-slate-700 shadow-sm hover:border-slate-600'
           }`}
         >
           <span>
@@ -413,18 +413,18 @@ export default function SpeechControl({ textToSpeak, languageCode, languageLabel
 
         {/* Roman Urdu phonetic disclaimer badge */}
         {matchState.isFallback && !isSpeaking && (
-          <span className="text-[10px] text-sky-400/80 bg-sky-950/40 border border-sky-800/40 px-1.5 py-0.5 rounded">
+          <span className="text-[10px] font-mono text-sky-400/90 bg-sky-950/60 border border-sky-800/50 px-2 py-0.5 rounded">
             Phonetic approximation
           </span>
         )}
 
         {/* Voice Origin Label */}
         {matchState.isLocal ? (
-          <span className="text-[10px] text-emerald-400/80 bg-emerald-950/40 border border-emerald-800/40 px-1.5 py-0.5 rounded">
+          <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/50 border border-emerald-800/50 px-2 py-0.5 rounded">
             System Voice
           </span>
         ) : (
-          <span className="text-[10px] text-amber-400/80 bg-amber-950/40 border border-amber-800/40 px-1.5 py-0.5 rounded">
+          <span className="text-[10px] font-mono text-amber-400 bg-amber-950/50 border border-amber-800/50 px-2 py-0.5 rounded">
             Remote Voice
           </span>
         )}
@@ -437,7 +437,7 @@ export default function SpeechControl({ textToSpeak, languageCode, languageLabel
           aria-labelledby="remote-voice-title"
           aria-describedby="remote-voice-desc"
           onKeyDown={handleConsentKeyDown}
-          className="p-3 rounded bg-amber-500/10 border border-amber-500/40 text-xs text-amber-200 mt-1 max-w-sm space-y-2.5 shadow-lg"
+          className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/40 text-xs text-amber-200 mt-1 max-w-sm space-y-2.5 shadow-xl backdrop-blur-md"
         >
           <div id="remote-voice-title" className="font-semibold text-amber-300 flex items-center space-x-1.5">
             <span>⚠️</span>
@@ -452,14 +452,14 @@ export default function SpeechControl({ textToSpeak, languageCode, languageLabel
               ref={allowButtonRef}
               type="button"
               onClick={handleAllowRemote}
-              className="px-2.5 py-1 rounded bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[11px] transition focus:outline-none focus:ring-2 focus:ring-amber-300 focus:ring-offset-1 focus:ring-offset-slate-900"
+              className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:ring-offset-1 focus:ring-offset-slate-900"
             >
               Allow &amp; Play
             </button>
             <button
               type="button"
               onClick={handleCancelRemote}
-              className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] transition focus:outline-none focus:ring-2 focus:ring-slate-500"
+              className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition focus:outline-none focus:ring-2 focus:ring-slate-500"
             >
               Cancel
             </button>
