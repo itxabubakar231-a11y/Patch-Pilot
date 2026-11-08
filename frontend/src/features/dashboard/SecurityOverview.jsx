@@ -4,7 +4,8 @@
  * Displays real-time security posture, proxy defense mode & readiness,
  * request telemetry counters, upstream lab status, and subsystem diagnostics.
  * Conforms to docs/API.md (Section 3.A) and docs/DESIGN.md (Section 5).
- * Owned by Member 3 (Team B).
+ * Enhanced in SmoothUI Sprint 3 with premium cyber command-center aesthetics,
+ * honest capability descriptions, and robust timer lifecycle management.
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react'
@@ -18,10 +19,14 @@ export default function SecurityOverview() {
   const [lastUpdated, setLastUpdated] = useState(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [isLiveConnected, setIsLiveConnected] = useState(false)
+  const [metricChanged, setMetricChanged] = useState(false)
 
   // Race condition protection: track latest request ID to safely ignore stale async responses
   const isMountedRef = useRef(true)
   const latestRequestIdRef = useRef(0)
+  const previousDataRef = useRef(null)
+  // FIX 3: Manage metric-change highlight timeout through ref with proper cancellation & unmount cleanup
+  const metricHighlightTimerRef = useRef(null)
 
   const fetchOverview = useCallback(async (isManual = false) => {
     const requestId = ++latestRequestIdRef.current
@@ -37,6 +42,29 @@ export default function SecurityOverview() {
       if (!isMountedRef.current || requestId !== latestRequestIdRef.current) {
         return
       }
+
+      // FIX 3: Check if actual metrics changed between polls (without animating static fixtures)
+      if (previousDataRef.current && data) {
+        const prevTraffic = previousDataRef.current.traffic || {}
+        const newTraffic = data.traffic || {}
+        if (
+          prevTraffic.total_requests !== newTraffic.total_requests ||
+          prevTraffic.blocked_requests !== newTraffic.blocked_requests ||
+          prevTraffic.shadow_matches !== newTraffic.shadow_matches
+        ) {
+          // Cancel any older timeout before starting a new one
+          if (metricHighlightTimerRef.current) {
+            clearTimeout(metricHighlightTimerRef.current)
+          }
+          setMetricChanged(true)
+          metricHighlightTimerRef.current = setTimeout(() => {
+            if (isMountedRef.current) {
+              setMetricChanged(false)
+            }
+          }, 1000)
+        }
+      }
+      previousDataRef.current = data
 
       setOverview(data)
       // Only set live connected when an actual API response is successfully returned in real mode
@@ -68,6 +96,11 @@ export default function SecurityOverview() {
     return () => {
       isMountedRef.current = false
       clearInterval(intervalId)
+      // FIX 3: Clear metric highlight timer on component unmount
+      if (metricHighlightTimerRef.current) {
+        clearTimeout(metricHighlightTimerRef.current)
+        metricHighlightTimerRef.current = null
+      }
     }
   }, [fetchOverview])
 
@@ -186,8 +219,8 @@ export default function SecurityOverview() {
             <span
               className={`text-[10px] font-mono uppercase font-bold px-2 py-0.5 rounded border ${
                 is_simulated
-                  ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
-                  : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                  ? 'bg-amber-500/10 text-amber-300 border-amber-500/30 shadow-[0_0_8px_rgba(245,158,11,0.15)]'
+                  : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 shadow-[0_0_8px_rgba(16,185,129,0.15)]'
               }`}
               title={
                 is_simulated
@@ -216,7 +249,9 @@ export default function SecurityOverview() {
             </span>
           </div>
           <p className="text-xs text-slate-400 mt-1">
-            Real-time defensive proxy posture, HTTP request inspection metrics, and mock PHP lab runtime status.
+            {isMockMode
+              ? 'Defensive proxy posture and request telemetry overview (displaying benchmark mock fixture metrics).'
+              : 'Defensive proxy posture and request inspection metrics from live backend.'}
           </p>
         </div>
 
@@ -233,9 +268,9 @@ export default function SecurityOverview() {
             disabled={isRefreshing}
             aria-busy={isRefreshing}
             aria-label="Refresh UI telemetry view"
-            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 disabled:opacity-50"
+            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-xs font-semibold text-slate-200 border border-slate-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 disabled:opacity-50 shadow-sm"
           >
-            <span className={`inline-block ${isRefreshing ? 'animate-spin' : ''}`}>🔄</span>
+            <span className={`inline-block transition-transform duration-500 ${isRefreshing ? 'animate-spin' : ''}`}>🔄</span>
             <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
           </button>
         </div>
@@ -246,7 +281,7 @@ export default function SecurityOverview() {
         <div
           role="note"
           aria-label="Demo mode disclosure"
-          className="rounded-xl border border-sky-500/30 bg-sky-950/30 p-3.5 text-xs flex flex-wrap items-center justify-between gap-2.5 text-sky-200 shadow-sm"
+          className="rounded-xl border border-sky-500/30 bg-sky-950/30 p-3.5 text-xs flex flex-wrap items-center justify-between gap-2.5 text-sky-200 shadow-sm transition-all duration-200"
         >
           <div className="flex items-center space-x-2.5">
             <span className="text-base">ℹ️</span>
@@ -336,8 +371,13 @@ export default function SecurityOverview() {
         </div>
       )}
 
-      {/* 4. Primary Telemetry Grid: 4 Top Cards */}
-      <section aria-label="Key security indicators" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* 4. Primary Telemetry Grid: 4 Top Cards (Preserved SmoothUI Glow Cards) */}
+      <section
+        aria-label="Key security indicators"
+        className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 transition-all duration-300 ${
+          metricChanged ? 'ring-1 ring-sky-400/40 rounded-2xl shadow-[0_0_20px_rgba(56,189,248,0.15)]' : ''
+        }`}
+      >
         {/* Card 1: Proxy Defense Mode */}
         <GlowCard color={proxyMode === 'enforce' ? 'rose' : proxyMode === 'shadow' ? 'amber' : 'slate'}>
           <div>
@@ -361,17 +401,18 @@ export default function SecurityOverview() {
               <span>{proxyMode === 'enforce' ? '🛡️' : proxyMode === 'shadow' ? '👁️' : '⚪'}</span>
               <span>{proxyMode} Mode</span>
             </div>
+            {/* FIX 1: Honest security capability description & clear mode conditions */}
             <p className="text-[11px] text-slate-400 leading-relaxed min-h-[34px]">
               {isMockMode ? (
                 <span>
-                  Mock fixture profile for {proxyMode} mode. (In live operation: {proxyMode === 'enforce' ? 'simulated marker returns 403.' : 'queries logged while traffic passes.'})
+                  Mock fixture profile illustrating {proxyMode} mode. In Shadow mode, traffic passes while query markers are observed; in Enforce mode, matched markers are rejected with HTTP 403 once verified by offline replay.
                 </span>
               ) : proxyMode === 'enforce' ? (
-                'Active defense: Simulated attacks and markers receive HTTP 403 blocks.'
+                'Live enforce mode: Detection rules intercept and reject matched attack markers with HTTP 403 blocks once verified by offline replay.'
               ) : proxyMode === 'shadow' ? (
-                'Passive observation: Matched queries are logged while traffic passes safely.'
+                'Live shadow mode: Detection rules observe and log matched query markers while requests pass safely.'
               ) : (
-                'Emergency bypass: Rule matching disabled; traffic passes unmodified.'
+                'Bypass mode: Rule matching disabled; traffic passes unmodified.'
               )}
             </p>
           </div>
@@ -462,10 +503,11 @@ export default function SecurityOverview() {
             <div className="text-3xl font-black text-rose-400 font-mono tabular-nums mb-1">
               {formatCount(traffic.blocked_requests)}
             </div>
+            {/* FIX 1: Honest blocked requests description */}
             <p className="text-[11px] text-slate-400 leading-relaxed min-h-[34px]">
               {isMockMode
                 ? 'Mock fixture baseline (0 blocks in default Shadow mode; increments only when Enforce is enabled).'
-                : 'Simulated attack markers intercepted and rejected with HTTP 403 in Enforce mode.'}
+                : 'Telemetry counter for rejected requests. Active 403 blocking applies only when Enforce mode is verified and running.'}
             </p>
           </div>
           <div className="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-[11px] text-slate-400">
@@ -473,11 +515,11 @@ export default function SecurityOverview() {
             <span className="font-mono text-slate-300">
               {proxyMode === 'enforce' ? (
                 <span className="text-rose-400 font-bold">
-                  {isMockMode ? 'Enforce Mode (Fixture)' : 'Active 403 Gate'}
+                  {isMockMode ? 'Enforce Mode (Fixture)' : isLiveConnected ? 'Enforce Gate (Live)' : 'Enforce (Configured)'}
                 </span>
               ) : (
                 <span className="text-slate-400">
-                  {isMockMode ? 'Dormant (Shadow Fixture)' : 'Dormant (Shadow)'}
+                  {isMockMode ? 'Dormant (Shadow Fixture)' : 'Dormant (Shadow Mode)'}
                 </span>
               )}
             </span>
@@ -485,63 +527,72 @@ export default function SecurityOverview() {
         </GlowCard>
       </section>
 
-      {/* 5. Subsystems, Lab Health, and Architecture Diagnostics */}
+      {/* 5. Subsystems, Lab Health, and Architecture Diagnostics (Sprint 3 Enhanced) */}
       <section aria-label="Subsystems and lab health" className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Subsystem 1: Fixed Lab Target Details */}
-        <div className="rounded-xl border border-slate-800/80 bg-slate-900/30 p-5 space-y-3.5 flex flex-col justify-between">
+        <div className="group rounded-2xl border border-slate-800/80 hover:border-sky-500/40 bg-gradient-to-br from-[#0F172A]/90 via-[#0B132B]/80 to-[#0F172A]/90 p-5 space-y-4 flex flex-col justify-between shadow-lg shadow-black/20 transition-all duration-300 hover:shadow-[0_0_25px_rgba(56,189,248,0.08)]">
           <div>
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-800/60">
               <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center space-x-2">
-                <span>🎯</span>
+                <span className="text-base group-hover:scale-110 transition-transform duration-200 motion-reduce:transform-none">🎯</span>
                 <span>Isolated Lab Target Status</span>
               </span>
               <span
-                className={`text-xs px-2.5 py-0.5 rounded-full font-mono font-semibold flex items-center space-x-1.5 ${
+                className={`text-xs px-2.5 py-0.5 rounded-full font-mono font-semibold flex items-center space-x-1.5 transition-colors ${
                   lab.status === 'online'
-                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                    : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shadow-[0_0_8px_rgba(16,185,129,0.15)]'
+                    : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
                 }`}
               >
                 <span
                   className={`w-1.5 h-1.5 rounded-full ${
-                    lab.status === 'online' ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'
+                    lab.status === 'online' ? 'bg-emerald-400 animate-pulse motion-reduce:animate-none' : 'bg-rose-400'
                   }`}
-                ></span>
+                />
                 <span className="uppercase">
                   {isMockMode ? `Mock Lab (${lab.status || 'online'})` : lab.status || 'unknown'}
                 </span>
               </span>
             </div>
 
-            <div className="space-y-2.5 text-xs text-slate-300 bg-slate-950/60 p-4 rounded-lg border border-slate-800/80 font-mono">
+            <div className="space-y-2.5 text-xs text-slate-300 bg-[#070D18]/80 p-4 rounded-xl border border-slate-800/90 font-mono shadow-inner">
               <div className="flex items-center justify-between">
-                <span className="text-slate-400 font-sans">Fixed Upstream:</span>
-                <span className="text-sky-300 font-bold">{lab.upstream || '127.0.0.1:8081'}</span>
+                <span className="text-slate-400 font-sans">Target Binding:</span>
+                <span className="text-sky-300 font-bold flex items-center space-x-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-sky-400" />
+                  <span>{lab.upstream || '127.0.0.1:8081'}</span>
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-slate-400 font-sans">Simulated Stack:</span>
-                <span className="text-slate-200">{lab.simulated_stack || 'Apache/2.4.52 + PHP/8.2.0'}</span>
+                <span className="text-slate-200 bg-slate-800/50 px-2 py-0.5 rounded border border-slate-700/60 text-[11px]">
+                  {lab.simulated_stack || 'Apache/2.4.52 + PHP/8.2.0'}
+                </span>
               </div>
+              {/* FIX 1: Honest target scope description (distinguishing proxy forward binding from host OS egress) */}
               <div className="flex items-center justify-between">
-                <span className="text-slate-400 font-sans">Target Isolation:</span>
-                <span className="text-amber-400 text-[11px]">Strict Loopback (No External Routing)</span>
+                <span className="text-slate-400 font-sans">Target Scope:</span>
+                <span className="text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/25 text-[11px] font-semibold">
+                  Localhost Upstream (127.0.0.1)
+                </span>
               </div>
             </div>
           </div>
 
-          <p className="text-[11px] text-slate-400 leading-relaxed">
+          {/* FIX 1: Honest lab target note */}
+          <p className="text-[11px] text-slate-400 leading-relaxed pt-1">
             {isMockMode
-              ? 'Local mock environment configured for port 8081. In live testing, the reverse proxy exclusively forwards traffic to loopback upstream (127.0.0.1:8081).'
-              : 'The security proxy exclusively forwards requests to the pinned loopback upstream (127.0.0.1:8081). Arbitrary target URLs or remote hosts are rejected by architectural design.'}
+              ? 'Local mock environment pinned to upstream port 8081. In live setup, proxy forwards exclusively to 127.0.0.1:8081; host-level outbound egress filtering is managed by the system environment.'
+              : 'The security proxy is architected to forward requests strictly to 127.0.0.1:8081. Host network egress controls depend on operating system configuration and are outside proxy application scope.'}
           </p>
         </div>
 
         {/* Subsystem 2: Module Health & Diagnostics */}
-        <div className="rounded-xl border border-slate-800/80 bg-slate-900/30 p-5 space-y-3.5 flex flex-col justify-between">
+        <div className="group rounded-2xl border border-slate-800/80 hover:border-amber-500/40 bg-gradient-to-br from-[#0F172A]/90 via-[#0B132B]/80 to-[#0F172A]/90 p-5 space-y-4 flex flex-col justify-between shadow-lg shadow-black/20 transition-all duration-300 hover:shadow-[0_0_25px_rgba(245,158,11,0.08)]">
           <div>
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-800/60">
               <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center space-x-2">
-                <span>⚙️</span>
+                <span className="text-base group-hover:scale-110 transition-transform duration-200 motion-reduce:transform-none">⚙️</span>
                 <span>Module Health & Subsystems</span>
               </span>
               <span className="text-[10px] font-mono text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700">
@@ -549,16 +600,16 @@ export default function SecurityOverview() {
               </span>
             </div>
 
-            <div className="space-y-2.5 text-xs text-slate-300 bg-slate-950/60 p-4 rounded-lg border border-slate-800/80">
+            <div className="space-y-2.5 text-xs text-slate-300 bg-[#070D18]/80 p-4 rounded-xl border border-slate-800/90 shadow-inner">
               <div className="flex items-center justify-between">
                 <span className="text-slate-400">Security Advisories (Zone 4):</span>
-                <span className="font-mono text-slate-200 font-bold tabular-nums">
+                <span className="font-mono text-sky-300 bg-sky-500/10 px-2 py-0.5 rounded border border-sky-500/25 font-bold tabular-nums text-[11px]">
                   {advisories.total ?? 0} active notice(s)
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-slate-400">File Compromise Scanner:</span>
-                <span className="font-mono text-amber-400 font-semibold text-[11px]">
+                <span className="font-mono text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/25 font-semibold text-[11px]">
                   {scanner.status === 'not_implemented' ? 'Phase 2 — Scheduled' : scanner.status}
                 </span>
               </div>
@@ -566,11 +617,17 @@ export default function SecurityOverview() {
                 <span className="text-slate-400">Management API (Port 8000):</span>
                 <span className="font-mono font-semibold text-[11px]">
                   {isLiveConnected ? (
-                    <span className="text-emerald-400">Connected (Authenticated HTTP 200)</span>
+                    <span className="text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/25">
+                      Connected (HTTP 200)
+                    </span>
                   ) : apiMode === 'real' ? (
-                    <span className="text-amber-400">Unreachable / Pending (127.0.0.1:8000)</span>
+                    <span className="text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/25">
+                      Unverified / Pending (127.0.0.1:8000)
+                    </span>
                   ) : (
-                    <span className="text-sky-400">Mock Fixture Mode (Not Queried)</span>
+                    <span className="text-slate-400 bg-slate-800/60 px-2 py-0.5 rounded border border-slate-700/60">
+                      Mock Fixture Mode
+                    </span>
                   )}
                 </span>
               </div>
@@ -579,9 +636,9 @@ export default function SecurityOverview() {
 
           <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400 pt-1">
             <span>
-              {isMockMode ? 'Fixture Baseline Timestamp: ' : 'Telemetry Timestamp: '}
+              {isMockMode ? 'Fixture Baseline: ' : 'Telemetry Time: '}
               <span className="font-mono text-slate-300 tabular-nums">
-                {generated_at ? `${generated_at}${isMockMode ? ' (pre-recorded baseline)' : ''}` : 'Live stream'}
+                {generated_at ? `${generated_at}${isMockMode ? ' (baseline)' : ''}` : 'Live stream'}
               </span>
             </span>
             <span className="text-slate-500 font-mono text-[10px]">
@@ -591,49 +648,112 @@ export default function SecurityOverview() {
         </div>
       </section>
 
-      {/* 6. System Architecture Topology Guide (Clarity for Hackathon Judges) */}
+      {/* 6. System Architecture Topology Guide (Sprint 3 Enhanced Flow Visualization) */}
       <section
         aria-label="PatchPilot loopback network topology"
-        className="rounded-xl border border-slate-800/60 bg-slate-900/20 p-4"
+        className="rounded-2xl border border-slate-800/80 bg-gradient-to-br from-[#0F172A]/70 via-[#0B132B]/50 to-[#0F172A]/70 p-5 shadow-lg shadow-black/20"
       >
-        <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-800/60">
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center space-x-1.5">
-            <span>🗺️</span>
-            <span>Local Network Topology & Port Bindings</span>
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-800/80">
+          <div className="flex items-center space-x-2">
+            <span className="w-2 h-2 rounded-full bg-sky-400 shadow-[0_0_8px_#38BDF8]" />
+            <span className="text-xs font-bold text-white uppercase tracking-wider">
+              Local Network Topology & Port Architecture
+            </span>
+          </div>
+          {/* FIX 1: Honest architecture title badge */}
+          <span className="text-[10px] font-mono text-slate-400 bg-slate-800/60 px-2.5 py-0.5 rounded-full border border-slate-700">
+            Configured 127.0.0.1 Architecture
           </span>
-          <span className="text-[10px] font-mono text-slate-500">127.0.0.1 Loopback Only</span>
         </div>
 
+        {/* Cohesive Architecture Grid with Visual Role Flow */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-          <div className="p-3 rounded-lg bg-slate-900/60 border border-slate-800/80 flex flex-col justify-between">
+          {/* Node 1: Operator Dashboard (5173) */}
+          <div className="group p-3.5 rounded-xl bg-[#070D18]/90 border border-slate-800/90 hover:border-sky-500/50 transition-all duration-200 flex flex-col justify-between hover:shadow-[0_0_15px_rgba(56,189,248,0.12)]">
             <div>
-              <span className="text-[10px] font-mono text-sky-400 font-bold block mb-1">PORT 5173</span>
-              <span className="font-semibold text-slate-200">Operator Dashboard</span>
-              <p className="text-[11px] text-slate-400 mt-1">React + Vite operator interface (active).</p>
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[10px] font-mono font-bold text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded border border-sky-500/25">
+                  PORT 5173
+                </span>
+                <span className="text-[10px] font-mono text-emerald-400 font-semibold flex items-center space-x-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <span>Active</span>
+                </span>
+              </div>
+              <span className="font-bold text-slate-200 text-sm block">Operator Dashboard</span>
+              <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
+                React + Vite operator interface. Visualizes defensive posture and planned proxy controls; displays mock benchmark data in demo mode.
+              </p>
+            </div>
+            <div className="mt-3 pt-2 border-t border-slate-800/60 text-[10px] text-slate-500 flex items-center justify-between font-mono">
+              <span>Binding: 127.0.0.1</span>
+              <span className="text-sky-400">UI Client</span>
             </div>
           </div>
 
-          <div className="p-3 rounded-lg bg-slate-900/60 border border-slate-800/80 flex flex-col justify-between">
+          {/* Node 2: Management API (8000) - FIX 1: Honest control plane description */}
+          <div className="group p-3.5 rounded-xl bg-[#070D18]/90 border border-slate-800/90 hover:border-emerald-500/50 transition-all duration-200 flex flex-col justify-between hover:shadow-[0_0_15px_rgba(16,185,129,0.12)]">
             <div>
-              <span className="text-[10px] font-mono text-emerald-400 font-bold block mb-1">PORT 8000</span>
-              <span className="font-semibold text-slate-200">Management API</span>
-              <p className="text-[11px] text-slate-400 mt-1">FastAPI service (health check active; telemetry APIs planned for Sprint 2).</p>
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/25">
+                  PORT 8000
+                </span>
+                <span className="text-[10px] font-mono text-slate-400 font-semibold">
+                  FastAPI
+                </span>
+              </div>
+              <span className="font-bold text-slate-200 text-sm block">Management API</span>
+              <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
+                Planned control plane interface. Architecture specifies bearer auth for policy updates, rule definitions, and advisory triage (backend integration in progress).
+              </p>
+            </div>
+            <div className="mt-3 pt-2 border-t border-slate-800/60 text-[10px] text-slate-500 flex items-center justify-between font-mono">
+              <span>Binding: 127.0.0.1</span>
+              <span className="text-emerald-400">Control Plane</span>
             </div>
           </div>
 
-          <div className="p-3 rounded-lg bg-slate-900/60 border border-slate-800/80 flex flex-col justify-between">
+          {/* Node 3: Reverse Proxy (8080) - FIX 1: Honest proxy gate description */}
+          <div className="group p-3.5 rounded-xl bg-[#070D18]/90 border border-slate-800/90 hover:border-amber-500/50 transition-all duration-200 flex flex-col justify-between hover:shadow-[0_0_15px_rgba(245,158,11,0.12)]">
             <div>
-              <span className="text-[10px] font-mono text-amber-400 font-bold block mb-1">PORT 8080</span>
-              <span className="font-semibold text-slate-200">Reverse Proxy</span>
-              <p className="text-[11px] text-slate-400 mt-1">Sprint 1 reverse proxy forwarder to 8081; inline rule filtering planned for Sprint 2.</p>
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[10px] font-mono font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/25">
+                  PORT 8080
+                </span>
+                <span className="text-[10px] font-mono text-amber-300 font-semibold">
+                  Forwarder Gate
+                </span>
+              </div>
+              <span className="font-bold text-slate-200 text-sm block">Reverse Proxy Shield</span>
+              <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
+                Configured reverse proxy gateway forwarding to port 8081. Architecture planned for inline marker evaluation and 403 enforcement once offline replay tests pass.
+              </p>
+            </div>
+            <div className="mt-3 pt-2 border-t border-slate-800/60 text-[10px] text-slate-500 flex items-center justify-between font-mono">
+              <span>Binding: 127.0.0.1</span>
+              <span className="text-amber-400">Proxy Ingress</span>
             </div>
           </div>
 
-          <div className="p-3 rounded-lg bg-slate-900/60 border border-slate-800/80 flex flex-col justify-between">
+          {/* Node 4: Isolated Lab Target (8081) - FIX 1: Honest target description */}
+          <div className="group p-3.5 rounded-xl bg-[#070D18]/90 border border-slate-800/90 hover:border-rose-500/50 transition-all duration-200 flex flex-col justify-between hover:shadow-[0_0_15px_rgba(244,63,94,0.12)]">
             <div>
-              <span className="text-[10px] font-mono text-rose-400 font-bold block mb-1">PORT 8081</span>
-              <span className="font-semibold text-slate-200">Isolated Lab Target</span>
-              <p className="text-[11px] text-slate-400 mt-1">Mock vulnerable PHP web server environment.</p>
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[10px] font-mono font-bold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/25">
+                  PORT 8081
+                </span>
+                <span className="text-[10px] font-mono text-rose-300 font-semibold">
+                  Designated Upstream
+                </span>
+              </div>
+              <span className="font-bold text-slate-200 text-sm block">Isolated Lab Target</span>
+              <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
+                Target architecture for mock vulnerable PHP lab on local port 8081. Designated upstream destination for proxy; runtime process availability is verified separately.
+              </p>
+            </div>
+            <div className="mt-3 pt-2 border-t border-slate-800/60 text-[10px] text-slate-500 flex items-center justify-between font-mono">
+              <span>Binding: 127.0.0.1</span>
+              <span className="text-rose-400">Upstream Lab</span>
             </div>
           </div>
         </div>
