@@ -6,8 +6,9 @@
  * Conforms to PRD.md, docs/ARCHITECTURE.md, and docs/DESIGN.md.
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import AppShell from './components/AppShell.jsx'
+import { subscribeAuthChange } from './services/apiClient.js'
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('overview')
@@ -17,6 +18,14 @@ export default function App() {
   const handleAuthChange = () => {
     setAuthTick((prev) => prev + 1)
   }
+
+  // Synchronize entire application shell with reactive in-memory auth state transitions
+  useEffect(() => {
+    const unsubscribe = subscribeAuthChange(() => {
+      setAuthTick((prev) => prev + 1)
+    })
+    return () => unsubscribe()
+  }, [])
 
   return (
     <AppShell

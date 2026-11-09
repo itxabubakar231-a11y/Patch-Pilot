@@ -11,6 +11,7 @@ import {
   setAdminToken,
   clearAdminToken,
   hasAdminToken,
+  subscribeAuthChange,
   getApiMode,
 } from '../services/apiClient.js'
 
@@ -18,8 +19,17 @@ export default function AdminUnlock({ onAuthChange }) {
   const [isOpen, setIsOpen] = useState(false)
   const [tokenInput, setTokenInput] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
-  const isUnlocked = hasAdminToken()
+  const [isUnlocked, setIsUnlocked] = useState(() => hasAdminToken())
   const mode = getApiMode()
+
+  // Subscribe to reactive in-memory auth state transitions (401 invalidation, unlock, lock)
+  useEffect(() => {
+    setIsUnlocked(hasAdminToken())
+    const unsubscribe = subscribeAuthChange((unlocked) => {
+      setIsUnlocked(unlocked)
+    })
+    return () => unsubscribe()
+  }, [])
 
   // Close modal on Escape key
   useEffect(() => {
