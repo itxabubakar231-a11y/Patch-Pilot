@@ -19,6 +19,36 @@ import {
 // ============================================================================
 
 let inMemoryToken = null
+const authChangeListeners = new Set()
+
+/**
+ * Broadcast in-memory authentication status to active subscribers.
+ * Strictly boolean payload; never emits token values.
+ * @param {boolean} isUnlocked
+ */
+function notifyAuthChange(isUnlocked) {
+  authChangeListeners.forEach((listener) => {
+    try {
+      listener(isUnlocked)
+    } catch (err) {
+      console.error('[apiClient] Error in auth change listener:', err)
+    }
+  })
+}
+
+/**
+ * Subscribe to in-memory authentication state transitions (e.g. 401 invalidation, unlock, lock).
+ * Returns an unsubscribe cleanup callback.
+ * @param {(isUnlocked: boolean) => void} listener
+ * @returns {() => void}
+ */
+export function subscribeAuthChange(listener) {
+  if (typeof listener !== 'function') return () => {}
+  authChangeListeners.add(listener)
+  return () => {
+    authChangeListeners.delete(listener)
+  }
+}
 
 /**
  * Set the local demo admin bearer token in JavaScript memory.
@@ -27,6 +57,7 @@ let inMemoryToken = null
  */
 export function setAdminToken(token) {
   inMemoryToken = token ? String(token).trim() : null
+  notifyAuthChange(Boolean(inMemoryToken))
 }
 
 /**
@@ -34,6 +65,7 @@ export function setAdminToken(token) {
  */
 export function clearAdminToken() {
   inMemoryToken = null
+  notifyAuthChange(false)
 }
 
 
@@ -445,6 +477,7 @@ export default {
   setAdminToken,
   clearAdminToken,
   hasAdminToken,
+  subscribeAuthChange,
 
   // Mode configuration
   getApiMode,
