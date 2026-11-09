@@ -412,7 +412,7 @@ apiClient.resetMockData()
 const z1 = await mountZone4()
 
 const text1 = z1.getText()
-assert(text1.includes('Security Advisory & Intelligence'), 'Must render main Zone 4 heading')
+assert(text1.includes('Zone 4 — Security Advisory & AI Intelligence'), 'Must render main Zone 4 heading')
 assert(text1.includes('DEMO-ADVISORY-001'), 'Must render pre-seeded demo identifier')
 assert(text1.includes('SEVERITY: MEDIUM'), 'Must render severity level')
 assert(text1.includes('Simulated Security Notice'), 'Must display initial English localization')
@@ -458,7 +458,7 @@ try {
 
   // Confirm fixture response rendered honestly without claiming real AI analysis
   const text2 = z2.getText()
-  assert(text2.includes('Security Advisory & Intelligence'), 'Zone 4 retains view after submission')
+  assert(text2.includes('Zone 4 — Security Advisory & AI Intelligence'), 'Zone 4 retains view after submission')
   assert(text2.includes('Deterministic Demo Fixture'), 'Retains simulation honesty disclosure')
   assert(text2.includes('Review official vendor bulletins'), 'Renders actionable hardening guidance from fixture')
   assert(text2.includes('SIMULATED DEMO'), 'Displays simulated demo badge')
