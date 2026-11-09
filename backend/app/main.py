@@ -1,11 +1,23 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.advisories import (
+    AdminAuthException,
+    admin_auth_exception_handler,
+    router as advisories_router,
+)
+
 app = FastAPI(
     title="PatchPilot Defensive Security API",
     description="Backend API service for PatchPilot self-hosted PHP defensive security toolkit.",
     version="0.1.0",
 )
+
+# Register custom exception handlers
+app.add_exception_handler(AdminAuthException, admin_auth_exception_handler)
+
+# Mount API routers
+app.include_router(advisories_router)
 
 # Enable CORS for local React development server
 app.add_middleware(
@@ -45,4 +57,3 @@ def get_health():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=True)
-
