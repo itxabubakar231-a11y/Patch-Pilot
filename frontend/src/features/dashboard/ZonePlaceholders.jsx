@@ -10,11 +10,12 @@ import SecurityOverview from './SecurityOverview.jsx'
 import TrafficMonitor from './TrafficMonitor.jsx'
 import ProxyShieldControls from './ProxyShieldControls.jsx'
 import AdvisoriesSection from './AdvisoriesSection.jsx'
+import { IconHourglass } from '../../components/Icons.jsx'
 
 export { SecurityOverview, TrafficMonitor, ProxyShieldControls, AdvisoriesSection }
 
-export function OverviewPlaceholder() {
-  return <SecurityOverview />
+export function OverviewPlaceholder({ onNavigate }) {
+  return <SecurityOverview onNavigate={onNavigate} />
 }
 
 export function TrafficPlaceholder() {
@@ -43,8 +44,8 @@ export function Phase2Placeholder({ title, description }) {
       </div>
 
       <div className="rounded-xl border border-dashed border-amber-500/30 bg-amber-500/5 p-8 text-center space-y-3">
-        <div className="w-10 h-10 rounded-full bg-amber-500/10 text-amber-400 flex items-center justify-center mx-auto text-lg border border-amber-500/20">
-          ⏳
+        <div className="w-10 h-10 rounded-full bg-amber-500/10 text-amber-400 flex items-center justify-center mx-auto border border-amber-500/20">
+          <IconHourglass className="w-5 h-5 text-amber-400" />
         </div>
         <h3 className="text-sm font-bold text-slate-200">Feature Scheduled for Phase 2</h3>
         <p className="text-xs text-slate-400 max-w-lg mx-auto leading-relaxed">

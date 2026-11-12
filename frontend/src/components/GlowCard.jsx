@@ -1,48 +1,37 @@
 /**
  * GlowCard Component
  *
- * SmoothUI-inspired cursor-following spotlight glow card for cybersecurity dashboards.
- * Creates an elegant radial-gradient spotlight on both the card border and surface
- * using vanilla React, CSS custom properties, and Tailwind CSS.
- *
- * Features & Guardrails:
- * - Tracks cursor (x, y) coordinates relative to card bounds.
- * - Dual-layer spotlight:
- *   1. Outer 1px perimeter illuminating border with accent glow (cyan/emerald/amber/rose).
- *   2. Inner surface radial gradient for deep-navy cybersecurity atmosphere.
- * - Smooth 200–300ms transition on hover enter/leave.
- * - Purely decorative overlays use pointer-events-none (never block clicks or selections).
- * - Disables cursor tracking on touch devices (pointer: coarse) or when prefers-reduced-motion is active.
- * - Zero external animation libraries required (100% standard React & Tailwind).
+ * Minimal, high-performance cursor spotlight card for cybersecurity SaaS.
+ * Provides subtle interactive spotlight on hover with zero external libraries.
+ * Features restrained borders and surfaces adhering to Linear/Cloudflare design discipline.
  */
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 
 const COLOR_MAP = {
   cyan: {
-    border: 'rgba(56, 189, 248, 0.45)', // Sky / Cyan (#38BDF8)
-    surface: 'rgba(56, 189, 248, 0.08)',
-    shadow: 'rgba(56, 189, 248, 0.15)',
+    border: 'rgba(56, 189, 248, 0.25)',
+    surface: 'rgba(56, 189, 248, 0.03)',
+  },
+  teal: {
+    border: 'rgba(20, 184, 166, 0.25)',
+    surface: 'rgba(20, 184, 166, 0.03)',
   },
   emerald: {
-    border: 'rgba(52, 211, 153, 0.45)', // Emerald (#34D399)
-    surface: 'rgba(52, 211, 153, 0.08)',
-    shadow: 'rgba(52, 211, 153, 0.15)',
+    border: 'rgba(16, 185, 129, 0.25)',
+    surface: 'rgba(16, 185, 129, 0.03)',
   },
   amber: {
-    border: 'rgba(251, 191, 36, 0.45)', // Amber (#FBBF24)
-    surface: 'rgba(251, 191, 36, 0.08)',
-    shadow: 'rgba(251, 191, 36, 0.15)',
+    border: 'rgba(245, 158, 11, 0.25)',
+    surface: 'rgba(245, 158, 11, 0.03)',
   },
   rose: {
-    border: 'rgba(251, 113, 133, 0.45)', // Rose (#FB7185)
-    surface: 'rgba(251, 113, 133, 0.08)',
-    shadow: 'rgba(251, 113, 133, 0.15)',
+    border: 'rgba(244, 63, 94, 0.25)',
+    surface: 'rgba(244, 63, 94, 0.03)',
   },
   slate: {
-    border: 'rgba(148, 163, 184, 0.35)', // Slate (#94A3B8)
-    surface: 'rgba(148, 163, 184, 0.05)',
-    shadow: 'rgba(148, 163, 184, 0.10)',
+    border: 'rgba(148, 163, 184, 0.15)',
+    surface: 'rgba(148, 163, 184, 0.02)',
   },
 }
 
@@ -89,7 +78,6 @@ export default function GlowCard({
       const x = e.clientX - rect.left
       const y = e.clientY - rect.top
 
-      // High-performance CSS variable update: avoids React component re-rendering
       containerRef.current.style.setProperty('--mouse-x', `${x}px`)
       containerRef.current.style.setProperty('--mouse-y', `${y}px`)
     },
@@ -114,44 +102,40 @@ export default function GlowCard({
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className={`group relative rounded-xl p-[1px] transition-all duration-300 ${className}`}
+      className={`group relative rounded-xl p-[1px] transition-colors duration-200 ${className}`}
       {...props}
     >
-      {/* 1. Border Glow Layer (visible through 1px wrapper perimeter) */}
+      {/* 1. Subtle Spotlight Perimeter Border */}
       <div
-        className="pointer-events-none absolute inset-0 rounded-xl transition-opacity duration-300 ease-out"
+        className="pointer-events-none absolute inset-0 rounded-xl transition-opacity duration-200 ease-out"
         style={{
           opacity: isHovered && !isDisabled ? 1 : 0,
-          background: `radial-gradient(280px circle at var(--mouse-x, -999px) var(--mouse-y, -999px), ${colorConfig.border}, transparent 70%)`,
+          background: `radial-gradient(220px circle at var(--mouse-x, -999px) var(--mouse-y, -999px), ${colorConfig.border}, transparent 70%)`,
         }}
         aria-hidden="true"
       />
 
-      {/* 2. Static Base Border & Ambient Drop Shadow */}
+      {/* 2. Static Perimeter Border */}
       <div
-        className="pointer-events-none absolute inset-0 rounded-xl border border-slate-800/80 transition-colors duration-200 group-hover:border-slate-700/60 group-focus-within:border-slate-600/80"
-        style={{
-          boxShadow: isHovered && !isDisabled ? `0 0 20px -5px ${colorConfig.shadow}` : 'none',
-          transition: 'box-shadow 300ms ease, border-color 200ms ease',
-        }}
+        className="pointer-events-none absolute inset-0 rounded-xl border border-white/[0.08] transition-colors duration-150 group-hover:border-white/[0.14]"
         aria-hidden="true"
       />
 
-      {/* 3. Inner Card Surface with Radial Spotlight Glow */}
+      {/* 3. Inner Card Surface with Restrained Spotlight */}
       <div
-        className={`relative h-full rounded-[11px] bg-slate-900/40 p-5 backdrop-blur-sm overflow-hidden flex flex-col justify-between ${innerClassName}`}
+        className={`relative h-full rounded-[11px] bg-[#121A2B]/60 p-4 backdrop-blur-xl overflow-hidden flex flex-col justify-between ${innerClassName}`}
       >
-        {/* Surface Glow Layer */}
+        {/* Surface Spotlight */}
         <div
-          className="pointer-events-none absolute inset-0 rounded-[11px] transition-opacity duration-300 ease-out"
+          className="pointer-events-none absolute inset-0 rounded-[11px] transition-opacity duration-200 ease-out"
           style={{
             opacity: isHovered && !isDisabled ? 1 : 0,
-            background: `radial-gradient(350px circle at var(--mouse-x, -999px) var(--mouse-y, -999px), ${colorConfig.surface}, transparent 65%)`,
+            background: `radial-gradient(300px circle at var(--mouse-x, -999px) var(--mouse-y, -999px), ${colorConfig.surface}, transparent 65%)`,
           }}
           aria-hidden="true"
         />
 
-        {/* 4. Interactive Content Layer (strictly in foreground) */}
+        {/* 4. Interactive Content Layer */}
         <div className="relative z-10 flex flex-col justify-between h-full">
           {children}
         </div>
@@ -159,4 +143,3 @@ export default function GlowCard({
     </div>
   )
 }
-
