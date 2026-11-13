@@ -4,7 +4,13 @@
  * Provides proxy mode switching (OFF / SHADOW / ENFORCE), replay evaluation gate,
  * rule inspection, and instant emergency rollback to Shadow mode.
  * Conforms strictly to docs/API.md (Sections 3.B, 3.C, 3.D, 3.E, 3.F) and docs/DESIGN.md (Section 5).
- * Owned by Member 3 (Team B).
+ * Styled to exact visual parity with the approved Stage 1 Emerald-and-Black Design System:
+ * - Deep black/charcoal backgrounds with subtle emerald borders and lighting.
+ * - Stage 1 Zone Header with mode-aware provenance badge and honest telemetry labels.
+ * - High-contrast defense posture cards (OFF / SHADOW / ENFORCE) preserving strict gating.
+ * - Refined Replay Verification progress meters with zero fabricated success.
+ * - Accessible confirmation & rollback modals outside inert container with focus trapping.
+ * - 100% SVG outline icons (zero emojis).
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react'
@@ -17,6 +23,21 @@ import {
   hasAdminToken,
   getApiMode,
 } from '../../services/apiClient.js'
+import {
+  IconRefresh,
+  IconCheckCircle,
+  IconClose,
+  IconShield,
+  IconShieldCheck,
+  IconShieldAlert,
+  IconShieldBan,
+  IconEye,
+  IconAlertTriangle,
+  IconHourglass,
+  IconInfo,
+  IconDocument,
+  IconClock,
+} from '../../components/Icons.jsx'
 
 export default function ProxyShieldControls() {
   const [proxyStatus, setProxyStatus] = useState(null)
@@ -443,7 +464,7 @@ export default function ProxyShieldControls() {
 
   const currentMode = proxyStatus?.mode || 'shadow'
   const isEnforcePendingVerification = isRunningReplay || isVerifyingReadiness
-  // FIX 1: Fail-closed global Enforce readiness
+  // Fail-closed global Enforce readiness
   const isReadyForEnforce = Boolean(
     !isEnforcePendingVerification &&
     !isReadinessUnverified &&
@@ -465,17 +486,17 @@ export default function ProxyShieldControls() {
   if (loading && !proxyStatus) {
     return (
       <div className="space-y-6 animate-pulse" aria-busy="true" aria-label="Loading shield controls">
-        <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-800/80">
+        <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-emerald-500/20">
           <div className="space-y-2">
-            <div className="h-6 bg-slate-800/70 rounded-md w-64"></div>
-            <div className="h-4 bg-slate-800/40 rounded-md w-96 max-w-full"></div>
+            <div className="h-6 bg-emerald-950/20 rounded-md w-64 border border-emerald-500/10"></div>
+            <div className="h-4 bg-emerald-950/15 rounded-md w-96 max-w-full border border-emerald-500/10"></div>
           </div>
-          <div className="h-8 bg-slate-800/60 rounded-lg w-28"></div>
+          <div className="h-8 bg-[#0C1A14] rounded-lg w-28 border border-emerald-500/20"></div>
         </div>
-        <div className="h-44 bg-slate-900/60 rounded-xl border border-slate-800/80"></div>
+        <div className="h-44 bg-[#0C1615]/90 rounded-xl border border-emerald-500/20"></div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="h-48 bg-slate-900/60 rounded-xl border border-slate-800/80"></div>
-          <div className="h-48 bg-slate-900/60 rounded-xl border border-slate-800/80"></div>
+          <div className="h-48 bg-[#0C1615]/90 rounded-xl border border-emerald-500/20"></div>
+          <div className="h-48 bg-[#0C1615]/90 rounded-xl border border-emerald-500/20"></div>
         </div>
       </div>
     )
@@ -488,10 +509,10 @@ export default function ProxyShieldControls() {
       <div
         role="alert"
         aria-live="assertive"
-        className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-8 text-center space-y-4 max-w-2xl mx-auto my-8 shadow-lg shadow-rose-950/20 backdrop-blur-md"
+        className="rounded-xl border border-rose-500/30 bg-[#0C1615]/90 p-8 text-center space-y-4 max-w-2xl mx-auto my-8 shadow-lg shadow-rose-950/20 backdrop-blur-md"
       >
         <div className="w-12 h-12 rounded-full bg-rose-500/20 text-rose-300 flex items-center justify-center mx-auto text-xl font-bold border border-rose-500/40">
-          !
+          <IconAlertTriangle className="w-6 h-6 text-rose-400" />
         </div>
         <div className="space-y-1.5">
           <h2 className="text-lg font-bold text-white tracking-tight">
@@ -514,7 +535,7 @@ export default function ProxyShieldControls() {
           <button
             type="button"
             onClick={() => fetchShieldData(true)}
-            className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
+            className="px-4 py-2 rounded-lg bg-[#0C1A14] hover:bg-[#12261F] text-xs font-semibold text-slate-200 border border-emerald-500/30 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
           >
             Retry Connection
           </button>
@@ -531,20 +552,21 @@ export default function ProxyShieldControls() {
         inert={isAnyModalOpen ? '' : undefined}
         aria-hidden={isAnyModalOpen ? 'true' : undefined}
       >
-        {/* 1. Header & Live Status Controls */}
-        <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-800/80">
-          <div>
+        {/* 1. Header & Live Status Controls (Stage 1 Parity) */}
+        <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-emerald-500/20">
+          <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-2.5">
-              <h2 className="text-xl font-bold text-white tracking-tight">
-                Zone 3 — Proxy Shield Controls
-              </h2>
-              {/* Mode badge */}
+              <span className="text-emerald-400 font-mono font-bold text-xs tracking-wider uppercase">
+                ZONE 3
+              </span>
+              <span className="text-slate-600 text-xs">•</span>
+              {/* Active Mode Badge */}
               <span
                 className={`text-[10px] font-mono uppercase font-bold px-2.5 py-0.5 rounded border transition-colors ${
                   currentMode === 'enforce'
                     ? 'bg-rose-500/20 text-rose-300 border-rose-500/40 shadow-sm shadow-rose-950/30'
                     : currentMode === 'shadow'
-                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-sm shadow-amber-950/30'
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-sm shadow-emerald-950/30'
                     : 'bg-slate-800 text-slate-400 border-slate-700'
                 }`}
               >
@@ -555,7 +577,7 @@ export default function ProxyShieldControls() {
               <span
                 className={`text-[10px] font-mono uppercase font-semibold px-2 py-0.5 rounded border ${
                   isMockMode
-                    ? 'bg-sky-500/10 text-sky-400 border-sky-500/30'
+                    ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30'
                     : isLiveConnected
                     ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                     : 'bg-amber-500/10 text-amber-300 border-amber-500/30'
@@ -568,22 +590,29 @@ export default function ProxyShieldControls() {
                   : 'Data: Real Mode (Unverified)'}
               </span>
             </div>
-            <p className="text-xs text-slate-400 mt-1">
+
+            <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight leading-tight">
+              Proxy Shield Controls
+            </h1>
+
+            <p className="text-xs text-slate-400 max-w-2xl leading-relaxed">
               Reversible request filtering controls. Mode transitions are authenticated, gated by replay fixtures, and auditable.
             </p>
           </div>
 
           {/* Replay Gate Status & UI Polling time */}
           <div className="flex items-center space-x-3 text-xs shrink-0">
-            <div className="text-[11px] text-slate-400 hidden sm:inline" aria-live="polite">
-              UI Polled:{' '}
+            <div className="text-[11px] text-slate-400 hidden sm:flex items-center space-x-1.5" aria-live="polite">
+              <IconClock className="w-3.5 h-3.5 text-slate-500" />
+              <span>UI Polled:</span>
               <strong className="text-slate-300 font-mono tabular-nums">{formatTime(lastUpdated)}</strong>
-              <span className="text-slate-500 ml-1.5">(client 5s refresh)</span>
+              <span className="text-slate-500">(5s)</span>
             </div>
+
             <div className="flex items-center space-x-1.5 text-xs">
               <span className="text-slate-400 text-[11px]">Gate:</span>
               <span
-                className={`font-mono font-semibold text-[11px] px-2.5 py-0.5 rounded border transition-colors ${
+                className={`font-mono font-semibold text-[11px] px-2.5 py-0.5 rounded border transition-colors inline-flex items-center space-x-1 ${
                   isReadyForEnforce
                     ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                     : 'bg-amber-500/10 text-amber-300 border-amber-500/30'
@@ -594,7 +623,17 @@ export default function ProxyShieldControls() {
                     : 'Enforce mode blocked until offline test suite passes.'
                 }
               >
-                {isReadyForEnforce ? '✓ READY FOR ENFORCE' : '⏳ REPLAY REQUIRED'}
+                {isReadyForEnforce ? (
+                  <>
+                    <IconCheckCircle className="w-3 h-3 text-emerald-400 shrink-0" />
+                    <span>READY FOR ENFORCE</span>
+                  </>
+                ) : (
+                  <>
+                    <IconHourglass className="w-3 h-3 text-amber-400 shrink-0" />
+                    <span>REPLAY REQUIRED</span>
+                  </>
+                )}
               </span>
             </div>
           </div>
@@ -605,18 +644,18 @@ export default function ProxyShieldControls() {
           <div
             role="note"
             aria-label="Demo shield controls disclosure"
-            className="rounded-xl border border-sky-500/30 bg-sky-950/30 p-3.5 text-xs flex flex-wrap items-center justify-between gap-2.5 text-sky-200 shadow-sm backdrop-blur-sm"
+            className="rounded-xl border border-emerald-500/30 bg-[#0C1615]/90 p-3.5 text-xs flex flex-wrap items-center justify-between gap-2.5 text-emerald-200 shadow-sm backdrop-blur-md"
           >
             <div className="flex items-center space-x-2.5">
-              <span className="text-base">ℹ️</span>
+              <IconInfo className="w-4 h-4 text-emerald-400 shrink-0" />
               <div>
-                <span className="font-bold text-sky-300">DEMO FIXTURE MODE ACTIVE:</span>{' '}
-                <span>
-                  Proxy shield controls and replay testing are simulated in-memory using local fixtures. No live proxy mode transitions or kernel-level packet filtering are performed.
+                <span className="font-bold text-emerald-300">DEMO FIXTURE MODE ACTIVE:</span>{' '}
+                <span className="text-slate-300">
+                  Proxy shield controls and replay testing are simulated in-memory using local fixtures. No live proxy mode transitions or packet filtering are performed.
                 </span>
               </div>
             </div>
-            <span className="text-[10px] font-mono text-sky-400 bg-sky-900/50 px-2 py-0.5 rounded border border-sky-700/60 uppercase">
+            <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-700/60 uppercase">
               VITE_DATA_MODE=mock
             </span>
           </div>
@@ -624,13 +663,13 @@ export default function ProxyShieldControls() {
           <div
             role="note"
             aria-label="Live backend mode active"
-            className="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-3.5 text-xs flex flex-wrap items-center justify-between gap-2.5 text-emerald-200 shadow-sm backdrop-blur-sm"
+            className="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-3.5 text-xs flex flex-wrap items-center justify-between gap-2.5 text-emerald-200 shadow-sm backdrop-blur-md"
           >
             <div className="flex items-center space-x-2.5">
-              <span className="text-base">⚡</span>
+              <IconShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
               <div>
                 <span className="font-bold text-emerald-300">LIVE PROXY MANAGEMENT CONNECTED:</span>{' '}
-                <span>
+                <span className="text-slate-300">
                   Mode transitions, replay evaluations, and rollbacks are executed by the FastAPI service on <code className="text-white font-mono">http://127.0.0.1:8000</code>.
                 </span>
               </div>
@@ -643,13 +682,13 @@ export default function ProxyShieldControls() {
           <div
             role="note"
             aria-label="Real mode unverified"
-            className="rounded-xl border border-amber-500/30 bg-amber-950/20 p-3.5 text-xs flex flex-wrap items-center justify-between gap-2.5 text-amber-200 shadow-sm backdrop-blur-sm"
+            className="rounded-xl border border-amber-500/30 bg-amber-950/20 p-3.5 text-xs flex flex-wrap items-center justify-between gap-2.5 text-amber-200 shadow-sm backdrop-blur-md"
           >
             <div className="flex items-center space-x-2.5">
-              <span className="text-base">⏳</span>
+              <IconHourglass className="w-4 h-4 text-amber-400 shrink-0" />
               <div>
                 <span className="font-bold text-amber-300">REAL MODE CONFIGURED (CONNECTION UNVERIFIED):</span>{' '}
-                <span>
+                <span className="text-slate-300">
                   Configured for live API, but an authenticated response from <code className="text-white font-mono">http://127.0.0.1:8000</code> has not been established yet.
                 </span>
               </div>
@@ -665,10 +704,10 @@ export default function ProxyShieldControls() {
           <div
             role="alert"
             aria-live="polite"
-            className="p-3.5 rounded-xl text-xs flex items-center justify-between gap-3 bg-rose-500/10 text-rose-300 border border-rose-500/30 shadow-sm backdrop-blur-sm"
+            className="p-3.5 rounded-xl text-xs flex items-center justify-between gap-3 bg-rose-500/10 text-rose-300 border border-rose-500/30 shadow-sm backdrop-blur-md"
           >
             <div className="flex items-center space-x-2">
-              <span>⚠️</span>
+              <IconAlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
               <span>
                 {error.code === 'UNAUTHORIZED'
                   ? 'Session expired: Admin token cleared. Please unlock the dashboard again in the top navigation.'
@@ -679,17 +718,17 @@ export default function ProxyShieldControls() {
               <button
                 type="button"
                 onClick={() => fetchShieldData(false)}
-                className="text-xs px-2 py-0.5 rounded bg-rose-900/40 hover:bg-rose-850 text-rose-200 border border-rose-700/60 transition"
+                className="text-xs px-2.5 py-1 rounded bg-rose-900/40 hover:bg-rose-800 text-rose-200 border border-rose-700/60 transition"
               >
                 Retry
               </button>
               <button
                 type="button"
                 onClick={() => setError(null)}
-                className="text-slate-400 hover:text-white text-xs px-1.5 py-0.5 rounded hover:bg-slate-800 transition"
+                className="text-slate-400 hover:text-white text-xs p-1 rounded hover:bg-white/[0.06] transition"
                 aria-label="Dismiss alert"
               >
-                ✕
+                <IconClose className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
@@ -700,41 +739,45 @@ export default function ProxyShieldControls() {
           <div
             role="alert"
             aria-live="assertive"
-            className={`p-4 rounded-xl text-xs flex items-start justify-between gap-3 border shadow-sm backdrop-blur-sm ${
+            className={`p-4 rounded-xl text-xs flex items-start justify-between gap-3 border shadow-sm backdrop-blur-md ${
               actionFeedback.type === 'success'
                 ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30 shadow-emerald-950/20'
                 : 'bg-rose-500/10 text-rose-300 border-rose-500/30 shadow-rose-950/20'
             }`}
           >
             <div className="flex items-start space-x-2.5">
-              <span className="text-base leading-none">{actionFeedback.type === 'success' ? '✓' : '⚠️'}</span>
+              {actionFeedback.type === 'success' ? (
+                <IconCheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+              ) : (
+                <IconAlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+              )}
               <div className="space-y-1">
-                <span className="font-semibold block">
+                <span className="font-semibold block text-white">
                   {actionFeedback.type === 'success' ? 'Operation Completed' : 'Operation Denied'}
                 </span>
-                <p className="text-[11px] leading-relaxed">{actionFeedback.message}</p>
+                <p className="text-[11px] leading-relaxed text-slate-300">{actionFeedback.message}</p>
               </div>
             </div>
             <button
               type="button"
               onClick={() => setActionFeedback(null)}
-              className="text-slate-400 hover:text-white text-xs p-1 rounded hover:bg-slate-800/60 transition focus:outline-none focus-visible:ring-1 focus-visible:ring-sky-400"
+              className="text-slate-400 hover:text-white text-xs p-1 rounded hover:bg-white/[0.06] transition focus:outline-none focus-visible:ring-1 focus-visible:ring-emerald-400"
               aria-label="Dismiss feedback"
             >
-              ✕
+              <IconClose className="w-3.5 h-3.5" />
             </button>
           </div>
         )}
 
-        {/* 5. Main Defense Posture Selection Card */}
+        {/* 5. Main Defense Posture Selection Card (Stage 1 Aesthetics) */}
         <section
           aria-label="Defense posture selector"
-          className="rounded-xl border border-slate-800/80 bg-slate-900/50 backdrop-blur-md p-6 space-y-5 shadow-lg shadow-slate-950/30"
+          className="rounded-xl border border-emerald-500/20 bg-[#0C1615]/90 backdrop-blur-md p-6 space-y-5 shadow-sm"
         >
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center space-x-2">
-                <span>🛡️</span>
+                <IconShield className="w-4 h-4 text-emerald-400" />
                 <span>1. Select Defense Posture</span>
               </h3>
               <p className="text-xs text-slate-400 mt-0.5">
@@ -757,10 +800,10 @@ export default function ProxyShieldControls() {
               onClick={(e) => handleRequestModeChange('off', e)}
               disabled={isUpdatingMode || currentMode === 'off'}
               aria-pressed={currentMode === 'off'}
-              className={`p-4 rounded-xl border text-left transition-all duration-200 relative flex flex-col justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 ${
+              className={`p-4 rounded-xl border text-left transition-all duration-200 relative flex flex-col justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 ${
                 currentMode === 'off'
                   ? 'bg-slate-800/90 border-slate-500 text-white shadow-lg shadow-slate-950/40 ring-1 ring-slate-400/50'
-                  : 'bg-slate-950/50 border-slate-800/80 text-slate-400 hover:border-slate-700 hover:text-slate-200 hover:bg-slate-900/60'
+                  : 'bg-[#080E0C]/90 border-slate-800/80 text-slate-400 hover:border-slate-700 hover:text-slate-200 hover:bg-[#0B1512]'
               }`}
             >
               <div>
@@ -777,40 +820,40 @@ export default function ProxyShieldControls() {
                   Emergency option. Rule evaluation is disabled. Traffic forwards directly to the lab target uninspected.
                 </p>
               </div>
-              <span className="text-[10px] text-slate-400 mt-4 block pt-2 border-t border-slate-800/60 font-mono">
+              <span className="text-[10px] text-slate-500 mt-4 block pt-2 border-t border-slate-800/60 font-mono">
                 Action: No rule evaluation
               </span>
             </button>
 
-            {/* SHADOW Mode Button */}
+            {/* SHADOW Mode Button (Default) */}
             <button
               type="button"
               onClick={(e) => handleRequestModeChange('shadow', e)}
               disabled={isUpdatingMode || currentMode === 'shadow'}
               aria-pressed={currentMode === 'shadow'}
-              className={`p-4 rounded-xl border text-left transition-all duration-200 relative flex flex-col justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 ${
+              className={`p-4 rounded-xl border text-left transition-all duration-200 relative flex flex-col justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${
                 currentMode === 'shadow'
-                  ? 'bg-amber-500/10 border-amber-500/60 text-amber-200 shadow-lg shadow-amber-950/30 ring-1 ring-amber-500/50'
-                  : 'bg-slate-950/50 border-slate-800/80 text-slate-400 hover:border-amber-500/40 hover:text-amber-300 hover:bg-slate-900/60'
+                  ? 'bg-emerald-500/10 border-emerald-500/60 text-emerald-200 shadow-[0_0_15px_rgba(16,185,129,0.15)] ring-1 ring-emerald-500/50'
+                  : 'bg-[#080E0C]/90 border-emerald-500/20 text-slate-400 hover:border-emerald-500/40 hover:text-emerald-300 hover:bg-[#0B1512]'
               }`}
             >
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold font-mono tracking-wider text-amber-400">
+                  <span className="text-xs font-bold font-mono tracking-wider text-emerald-400">
                     SHADOW (Default)
                   </span>
                   {currentMode === 'shadow' && (
-                    <span className="text-[10px] font-mono bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded font-bold">
+                    <span className="text-[10px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded font-bold">
                       ACTIVE
                     </span>
                   )}
                 </div>
                 <h4 className="text-sm font-bold text-slate-200 mb-1">Non-Blocking Observation</h4>
                 <p className="text-[11px] text-slate-400 leading-relaxed">
-                  Matches demo queries and logs them as <code className="text-amber-300">shadow_match</code>. Requests safely reach the lab target with 0% false interruption.
+                  Matches demo queries and logs them as <code className="text-emerald-300">shadow_match</code>. Requests safely reach the lab target with 0% false interruption.
                 </p>
               </div>
-              <span className="text-[10px] text-amber-400/80 mt-4 block pt-2 border-t border-slate-800/60 font-mono">
+              <span className="text-[10px] text-emerald-400/80 mt-4 block pt-2 border-t border-emerald-500/20 font-mono">
                 Action: Log & forward (Zero blocking)
               </span>
             </button>
@@ -825,8 +868,8 @@ export default function ProxyShieldControls() {
                 currentMode === 'enforce'
                   ? 'bg-rose-500/15 border-rose-500/60 text-rose-200 shadow-lg shadow-rose-950/40 ring-1 ring-rose-500/50'
                   : !isReadyForEnforce
-                  ? 'bg-slate-950/30 border-slate-800/50 text-slate-500 cursor-not-allowed opacity-65'
-                  : 'bg-slate-950/50 border-slate-800/80 text-slate-400 hover:border-rose-500/40 hover:text-rose-300 hover:bg-slate-900/60'
+                  ? 'bg-[#080E0C]/50 border-slate-800/50 text-slate-500 cursor-not-allowed opacity-65'
+                  : 'bg-[#080E0C]/90 border-rose-500/30 text-slate-300 hover:border-rose-500/50 hover:text-rose-200 hover:bg-[#0B1512]'
               }`}
             >
               <div>
@@ -869,11 +912,11 @@ export default function ProxyShieldControls() {
         {/* 6. Emergency Rollback & Safety Card */}
         <section
           aria-label="Emergency rollback control"
-          className="rounded-xl border border-amber-500/30 bg-amber-500/5 backdrop-blur-md p-6 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+          className="rounded-xl border border-amber-500/30 bg-amber-500/5 backdrop-blur-md p-5 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
         >
           <div className="space-y-1 max-w-2xl">
             <div className="flex items-center space-x-2">
-              <span className="text-amber-400 text-base">⏪</span>
+              <IconRefresh className="w-4 h-4 text-amber-400 shrink-0" />
               <h3 className="text-sm font-bold text-white">Emergency Rollback Control</h3>
             </div>
             <p className="text-xs text-slate-300 leading-relaxed">
@@ -886,28 +929,22 @@ export default function ProxyShieldControls() {
             onClick={handleOpenRollbackModal}
             disabled={isRollingBack}
             aria-busy={isRollingBack}
-            className="shrink-0 px-4 py-2.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition shadow-md shadow-amber-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 disabled:opacity-50"
+            className="shrink-0 px-4 py-2.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition shadow-md shadow-amber-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 disabled:opacity-50 flex items-center space-x-1.5"
           >
-            {isRollingBack ? (
-              <span className="flex items-center space-x-1.5">
-                <span className="animate-spin inline-block">🔄</span>
-                <span>Rolling back...</span>
-              </span>
-            ) : (
-              '⏪ Rollback to Shadow'
-            )}
+            <IconRefresh className={`w-3.5 h-3.5 ${isRollingBack ? 'animate-spin' : ''}`} />
+            <span>{isRollingBack ? 'Rolling back...' : 'Rollback to Shadow'}</span>
           </button>
         </section>
 
         {/* 7. Replay Gate & Security Rules Table */}
         <section
           aria-label="Security rules and replay evaluation"
-          className="rounded-xl border border-slate-800/80 bg-slate-900/50 backdrop-blur-md p-6 space-y-4 shadow-lg shadow-slate-950/30"
+          className="rounded-xl border border-emerald-500/20 bg-[#0C1615]/90 backdrop-blur-md p-6 space-y-4 shadow-sm"
         >
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center space-x-2">
-                <span>📋</span>
+                <IconDocument className="w-4 h-4 text-emerald-400" />
                 <span>2. Seeded Security Rules & Replay Gate</span>
               </h3>
               <p className="text-xs text-slate-400 mt-0.5">
@@ -915,16 +952,16 @@ export default function ProxyShieldControls() {
               </p>
             </div>
             <span className="text-[11px] font-mono text-slate-400">
-              Fixture Version: <strong className="text-slate-300">lab-v1</strong>
+              Fixture Version: <strong className="text-emerald-400">lab-v1</strong>
             </span>
           </div>
 
           {/* Rules Table */}
-          <div className="overflow-x-auto border border-slate-800/80 rounded-lg">
+          <div className="overflow-x-auto border border-emerald-500/20 rounded-lg">
             <table className="w-full min-w-[640px] text-left text-xs border-collapse">
               <caption className="sr-only">Seeded security detection rules and replay verification state</caption>
               <thead>
-                <tr className="border-b border-slate-800 bg-slate-950/80 text-[11px] text-slate-400 uppercase tracking-wider font-semibold">
+                <tr className="border-b border-emerald-500/20 bg-[#080E0C]/90 text-[10px] text-slate-400 uppercase tracking-wider font-semibold font-mono">
                   <th scope="col" className="px-4 py-3">ID</th>
                   <th scope="col" className="px-4 py-3">Rule Name</th>
                   <th scope="col" className="px-4 py-3">Matcher Pattern</th>
@@ -933,7 +970,7 @@ export default function ProxyShieldControls() {
                   <th scope="col" className="px-4 py-3 text-right">Gate Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60 font-mono text-slate-200">
+              <tbody className="divide-y divide-emerald-500/10 font-mono text-slate-200">
                 {rules.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-4 py-8 text-center text-xs text-slate-500 font-sans">
@@ -942,8 +979,7 @@ export default function ProxyShieldControls() {
                   </tr>
                 ) : (
                   rules.map((rule) => {
-                    // FIX 2: Latest replay result for this rule takes precedence over historic replay_passed.
-                    // Historic rule.replay_passed is used only when there is no newer result for this rule.
+                    // Latest replay result for this rule takes precedence over historic replay_passed.
                     const isThisRuleReplayed = replayResult && Number(replayResult.rule_id) === Number(rule.id)
                     const passed = isThisRuleReplayed
                       ? Boolean(replayResult.passed)
@@ -953,7 +989,7 @@ export default function ProxyShieldControls() {
                       : false
 
                     return (
-                      <tr key={rule.id} className="hover:bg-slate-800/40 transition-colors">
+                      <tr key={rule.id} className="hover:bg-emerald-950/20 transition-colors">
                         <td className="px-4 py-3 text-slate-400 font-bold">#{rule.id}</td>
                         <td className="px-4 py-3 font-sans font-medium text-white">
                           <div>
@@ -969,12 +1005,12 @@ export default function ProxyShieldControls() {
                           </div>
                         </td>
                         <td className="px-4 py-3">
-                          <span className="px-2 py-0.5 rounded bg-slate-950 border border-slate-800 text-sky-300">
+                          <span className="px-2 py-0.5 rounded bg-[#070D0B] border border-emerald-500/20 text-emerald-300">
                             {rule.match_config?.name}={rule.match_config?.value}
                           </span>
                         </td>
                         <td className="px-4 py-3">
-                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 whitespace-nowrap">
+                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 whitespace-nowrap">
                             {rule.human_approved ? 'Approved Demo' : 'Pending Review'}
                           </span>
                         </td>
@@ -982,23 +1018,23 @@ export default function ProxyShieldControls() {
                           {passed ? (
                             isReadyForEnforce ? (
                               <span className="inline-flex items-center space-x-1 text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-0.5 rounded">
-                                <span>✓</span>
+                                <IconCheckCircle className="w-3 h-3 text-emerald-400" />
                                 <span>Passed (Gate Ready)</span>
                               </span>
                             ) : (
-                              <span className="inline-flex items-center space-x-1 text-[10px] font-semibold text-sky-400 bg-sky-500/10 border border-sky-500/30 px-2.5 py-0.5 rounded">
-                                <span>✓</span>
+                              <span className="inline-flex items-center space-x-1 text-[10px] font-semibold text-cyan-400 bg-cyan-500/10 border border-cyan-500/30 px-2.5 py-0.5 rounded">
+                                <IconCheckCircle className="w-3 h-3 text-cyan-400" />
                                 <span>Replay Passed (Pending Gate)</span>
                               </span>
                             )
                           ) : failed ? (
                             <span className="inline-flex items-center space-x-1 text-[10px] font-semibold text-rose-400 bg-rose-500/10 border border-rose-500/30 px-2.5 py-0.5 rounded">
-                              <span>✕</span>
+                              <IconClose className="w-3 h-3 text-rose-400" />
                               <span>Replay Failed</span>
                             </span>
                           ) : (
                             <span className="inline-flex items-center space-x-1 text-[10px] font-semibold text-amber-300 bg-amber-500/10 border border-amber-500/30 px-2.5 py-0.5 rounded">
-                              <span>⏳</span>
+                              <IconHourglass className="w-3 h-3 text-amber-400" />
                               <span>Replay Required</span>
                             </span>
                           )}
@@ -1009,11 +1045,11 @@ export default function ProxyShieldControls() {
                             onClick={() => handleRunReplay(rule.id)}
                             disabled={isRunningReplay || isVerifyingReadiness}
                             aria-busy={isRunningReplay}
-                            className="px-3.5 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 disabled:bg-slate-800 disabled:text-slate-600 text-white font-sans text-xs font-semibold transition-all duration-150 shadow-sm shadow-sky-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
+                            className="px-3.5 py-1.5 rounded-lg bg-[#0E7490] hover:bg-[#0891B2] disabled:bg-slate-800 disabled:text-slate-600 text-white font-sans text-xs font-semibold transition-all duration-150 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
                           >
                             {isRunningReplay ? (
                               <span className="flex items-center space-x-1.5">
-                                <span className="animate-spin inline-block">🔄</span>
+                                <IconRefresh className="w-3 h-3 animate-spin" />
                                 <span>Evaluating...</span>
                               </span>
                             ) : (
@@ -1029,14 +1065,16 @@ export default function ProxyShieldControls() {
             </table>
           </div>
 
-          {/* Replay Details Subcard with Calculated Progress Bars (FEATURE B) */}
+          {/* Replay Details Subcard with Calculated Progress Bars */}
           {replayResult && (
-            <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 text-xs space-y-4 shadow-inner">
+            <div className="p-4 rounded-xl bg-[#080E0C]/90 border border-emerald-500/20 text-xs space-y-4 shadow-inner">
               <div className="flex flex-wrap items-center justify-between gap-2 text-slate-300">
                 <div className="flex items-center space-x-2">
-                  <span className={replayResult.passed ? 'text-emerald-400 font-bold text-sm' : 'text-rose-400 font-bold text-sm'}>
-                    {replayResult.passed ? '✓' : '✕'}
-                  </span>
+                  {replayResult.passed ? (
+                    <IconCheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+                  ) : (
+                    <IconClose className="w-4 h-4 text-rose-400 shrink-0" />
+                  )}
                   <span className="font-bold text-white text-xs">
                     Replay Run #{replayResult.run_id} Results (Rule #{replayResult.rule_id}){' '}
                     <span className="text-slate-400 font-normal">
@@ -1054,9 +1092,9 @@ export default function ProxyShieldControls() {
                   >
                     {replayResult.passed
                       ? isReadyForEnforce
-                        ? '✓ GATE UNLOCKED'
-                        : '✓ REPLAY PASSED (GATE LOCKED)'
-                      : '❌ REPLAY FAILED (GATE LOCKED)'}
+                        ? 'GATE UNLOCKED'
+                        : 'REPLAY PASSED (GATE LOCKED)'
+                      : 'REPLAY FAILED (GATE LOCKED)'}
                   </span>
                 </div>
                 <span className="font-mono text-slate-400 text-[11px] tabular-nums">
@@ -1067,20 +1105,20 @@ export default function ProxyShieldControls() {
               {/* Visual Progress Metrics Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 font-mono text-[11px]">
                 {/* Benign Fixtures Count */}
-                <div className="p-3 rounded-lg bg-slate-900/90 border border-slate-800 space-y-1.5">
+                <div className="p-3 rounded-lg bg-[#070D0B] border border-emerald-500/15 space-y-1.5">
                   <span className="text-slate-400 block text-[10px] font-sans">Benign Requests:</span>
                   <span className="text-white font-bold text-sm tabular-nums">{benignTotal}</span>
                   <span className="text-[10px] text-slate-500 block font-sans">Harmless lab baseline</span>
                 </div>
 
                 {/* Benign Pass Progress Bar */}
-                <div className="p-3 rounded-lg bg-slate-900/90 border border-slate-800 space-y-1.5">
+                <div className="p-3 rounded-lg bg-[#070D0B] border border-emerald-500/15 space-y-1.5">
                   <div className="flex items-center justify-between">
                     <span className="text-slate-400 text-[10px] font-sans">Benign Pass Rate:</span>
                     <span className="text-emerald-400 font-bold tabular-nums">{benignPassPct}%</span>
                   </div>
                   {/* Progress bar */}
-                  <div className="w-full h-2 rounded-full bg-slate-950 overflow-hidden border border-slate-800/80">
+                  <div className="w-full h-2 rounded-full bg-slate-950 overflow-hidden border border-emerald-500/20">
                     <div
                       className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-500"
                       style={{ width: `${benignPassPct}%` }}
@@ -1097,22 +1135,22 @@ export default function ProxyShieldControls() {
                 </div>
 
                 {/* Attack Markers Count */}
-                <div className="p-3 rounded-lg bg-slate-900/90 border border-slate-800 space-y-1.5">
+                <div className="p-3 rounded-lg bg-[#070D0B] border border-emerald-500/15 space-y-1.5">
                   <span className="text-slate-400 block text-[10px] font-sans">Attack Markers:</span>
                   <span className="text-white font-bold text-sm tabular-nums">{attackTotal}</span>
                   <span className="text-[10px] text-slate-500 block font-sans">Tested fixture patterns</span>
                 </div>
 
-                {/* Attack Matches in Replay Progress Bar (FIX 1) */}
-                <div className="p-3 rounded-lg bg-slate-900/90 border border-slate-800 space-y-1.5">
+                {/* Attack Matches in Replay Progress Bar */}
+                <div className="p-3 rounded-lg bg-[#070D0B] border border-emerald-500/15 space-y-1.5">
                   <div className="flex items-center justify-between">
                     <span className="text-slate-400 text-[10px] font-sans">Attack Detection:</span>
-                    <span className="text-sky-400 font-bold tabular-nums">{attackInterceptPct}%</span>
+                    <span className="text-cyan-400 font-bold tabular-nums">{attackInterceptPct}%</span>
                   </div>
                   {/* Progress bar */}
-                  <div className="w-full h-2 rounded-full bg-slate-950 overflow-hidden border border-slate-800/80">
+                  <div className="w-full h-2 rounded-full bg-slate-950 overflow-hidden border border-emerald-500/20">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-sky-500 to-indigo-500 transition-all duration-500"
+                      className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-emerald-400 transition-all duration-500"
                       style={{ width: `${attackInterceptPct}%` }}
                       role="progressbar"
                       aria-valuenow={attackInterceptPct}
@@ -1121,7 +1159,7 @@ export default function ProxyShieldControls() {
                       aria-label="Attack detection rate"
                     />
                   </div>
-                  <span className="text-[10px] text-sky-400/90 block font-sans">
+                  <span className="text-[10px] text-cyan-400/90 block font-sans">
                     {attackMatches} / {attackTotal} matched in replay ({attackInterceptPct}%)
                   </span>
                 </div>
@@ -1131,13 +1169,13 @@ export default function ProxyShieldControls() {
         </section>
       </div>
 
-      {/* 8. Confirmation Modal: Mode Transition (OUTSIDE inert container, FIX 3) */}
+      {/* 8. Confirmation Modal: Mode Transition (OUTSIDE inert container) */}
       {pendingMode && (
         <div
           role="dialog"
           aria-modal="true"
           aria-labelledby="mode-modal-title"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
           onClick={(e) => {
             if (e.target === e.currentTarget && !isUpdatingMode) {
               handleCloseModeModal()
@@ -1146,12 +1184,18 @@ export default function ProxyShieldControls() {
         >
           <div
             ref={modeModalRef}
-            className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl border border-slate-700 bg-[#0F172A] p-6 shadow-2xl space-y-4"
+            className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl border border-emerald-500/30 bg-[#0A1210] p-6 shadow-2xl space-y-4"
           >
-            <div className="flex items-center space-x-3 pb-3 border-b border-slate-800">
-              <span className="text-2xl">
-                {pendingMode === 'enforce' ? '🛡️' : pendingMode === 'shadow' ? '👁' : '⏸️'}
-              </span>
+            <div className="flex items-center space-x-3 pb-3 border-b border-emerald-500/20">
+              <div className="w-10 h-10 rounded-full bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center shrink-0">
+                {pendingMode === 'enforce' ? (
+                  <IconShieldAlert className="w-5 h-5 text-rose-400" />
+                ) : pendingMode === 'shadow' ? (
+                  <IconEye className="w-5 h-5 text-emerald-400" />
+                ) : (
+                  <IconShield className="w-5 h-5 text-slate-400" />
+                )}
+              </div>
               <div>
                 <h3 id="mode-modal-title" className="text-base font-bold text-white">
                   Confirm Mode Transition to {pendingMode.toUpperCase()}
@@ -1183,12 +1227,12 @@ export default function ProxyShieldControls() {
               )}
             </div>
 
-            <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-800">
+            <div className="flex items-center justify-end space-x-2 pt-3 border-t border-emerald-500/20">
               <button
                 type="button"
                 onClick={handleCloseModeModal}
                 disabled={isUpdatingMode}
-                className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition focus:outline-none focus-visible:ring-1 focus-visible:ring-sky-400 disabled:opacity-50"
+                className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/[0.06] transition focus:outline-none focus-visible:ring-1 focus-visible:ring-emerald-400 disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -1196,10 +1240,10 @@ export default function ProxyShieldControls() {
                 type="button"
                 onClick={handleConfirmModeChange}
                 disabled={isUpdatingMode}
-                className={`px-4 py-1.5 rounded-lg text-xs font-bold text-white transition shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${
+                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${
                   pendingMode === 'enforce'
-                    ? 'bg-rose-500 hover:bg-rose-400 focus-visible:ring-rose-400'
-                    : 'bg-sky-500 hover:bg-sky-400 focus-visible:ring-sky-400'
+                    ? 'bg-rose-600 hover:bg-rose-500 text-white focus-visible:ring-rose-400'
+                    : 'bg-[#10B981] hover:bg-[#059669] text-black focus-visible:ring-emerald-400'
                 }`}
               >
                 {isUpdatingMode ? 'Updating...' : `Confirm ${pendingMode.toUpperCase()}`}
@@ -1209,13 +1253,13 @@ export default function ProxyShieldControls() {
         </div>
       )}
 
-      {/* 9. Confirmation Modal: Emergency Rollback (OUTSIDE inert container, FIX 3) */}
+      {/* 9. Confirmation Modal: Emergency Rollback (OUTSIDE inert container) */}
       {showRollbackModal && (
         <div
           role="dialog"
           aria-modal="true"
           aria-labelledby="rollback-modal-title"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
           onClick={(e) => {
             if (e.target === e.currentTarget && !isRollingBack) {
               handleCloseRollbackModal()
@@ -1224,10 +1268,12 @@ export default function ProxyShieldControls() {
         >
           <div
             ref={rollbackModalRef}
-            className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl border border-amber-500/40 bg-[#0F172A] p-6 shadow-2xl shadow-amber-950/30 space-y-4"
+            className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl border border-amber-500/40 bg-[#0D1410] p-6 shadow-2xl shadow-amber-950/30 space-y-4"
           >
-            <div className="flex items-center space-x-3 pb-3 border-b border-slate-800">
-              <span className="text-2xl text-amber-400">⏪</span>
+            <div className="flex items-center space-x-3 pb-3 border-b border-amber-500/20">
+              <div className="w-10 h-10 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shrink-0">
+                <IconRefresh className="w-5 h-5 text-amber-400" />
+              </div>
               <div>
                 <h3 id="rollback-modal-title" className="text-base font-bold text-white">
                   Confirm Emergency Rollback
@@ -1240,12 +1286,12 @@ export default function ProxyShieldControls() {
               Are you sure you want to trigger an immediate emergency rollback? This will revert the proxy from <strong>{currentMode.toUpperCase()}</strong> back to <strong>SHADOW</strong> mode and log an auditable event. No rules will be deleted.
             </p>
 
-            <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-800">
+            <div className="flex items-center justify-end space-x-2 pt-3 border-t border-amber-500/20">
               <button
                 type="button"
                 onClick={handleCloseRollbackModal}
                 disabled={isRollingBack}
-                className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition focus:outline-none focus-visible:ring-1 focus-visible:ring-amber-400 disabled:opacity-50"
+                className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/[0.06] transition focus:outline-none focus-visible:ring-1 focus-visible:ring-amber-400 disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -1253,15 +1299,15 @@ export default function ProxyShieldControls() {
                 type="button"
                 onClick={handleConfirmRollback}
                 disabled={isRollingBack}
-                className="px-4 py-1.5 rounded-lg text-xs font-bold text-slate-950 bg-amber-500 hover:bg-amber-400 transition shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 disabled:opacity-60"
+                className="px-4 py-1.5 rounded-lg text-xs font-bold text-slate-950 bg-amber-500 hover:bg-amber-400 transition shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 disabled:opacity-60 flex items-center space-x-1.5"
               >
                 {isRollingBack ? (
-                  <span className="flex items-center space-x-1.5">
-                    <span className="animate-spin inline-block">🔄</span>
+                  <>
+                    <IconRefresh className="w-3.5 h-3.5 animate-spin" />
                     <span>Rolling back...</span>
-                  </span>
+                  </>
                 ) : (
-                  'Confirm Rollback'
+                  <span>Confirm Rollback</span>
                 )}
               </button>
             </div>
