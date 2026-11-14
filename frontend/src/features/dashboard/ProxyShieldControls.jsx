@@ -800,7 +800,7 @@ export default function ProxyShieldControls() {
               onClick={(e) => handleRequestModeChange('off', e)}
               disabled={isUpdatingMode || currentMode === 'off'}
               aria-pressed={currentMode === 'off'}
-              className={`p-4 rounded-xl border text-left transition-all duration-200 relative flex flex-col justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 ${
+              className={`p-4 rounded-xl border text-left transition-all duration-200 active:scale-[0.99] relative flex flex-col justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 ${
                 currentMode === 'off'
                   ? 'bg-slate-800/90 border-slate-500 text-white shadow-lg shadow-slate-950/40 ring-1 ring-slate-400/50'
                   : 'bg-[#080E0C]/90 border-slate-800/80 text-slate-400 hover:border-slate-700 hover:text-slate-200 hover:bg-[#0B1512]'
@@ -831,7 +831,7 @@ export default function ProxyShieldControls() {
               onClick={(e) => handleRequestModeChange('shadow', e)}
               disabled={isUpdatingMode || currentMode === 'shadow'}
               aria-pressed={currentMode === 'shadow'}
-              className={`p-4 rounded-xl border text-left transition-all duration-200 relative flex flex-col justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${
+              className={`p-4 rounded-xl border text-left transition-all duration-200 active:scale-[0.99] relative flex flex-col justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${
                 currentMode === 'shadow'
                   ? 'bg-emerald-500/10 border-emerald-500/60 text-emerald-200 shadow-[0_0_15px_rgba(16,185,129,0.15)] ring-1 ring-emerald-500/50'
                   : 'bg-[#080E0C]/90 border-emerald-500/20 text-slate-400 hover:border-emerald-500/40 hover:text-emerald-300 hover:bg-[#0B1512]'
@@ -864,7 +864,7 @@ export default function ProxyShieldControls() {
               onClick={(e) => handleRequestModeChange('enforce', e)}
               disabled={isUpdatingMode || isEnforcePendingVerification || currentMode === 'enforce' || !isReadyForEnforce}
               aria-pressed={currentMode === 'enforce'}
-              className={`p-4 rounded-xl border text-left transition-all duration-200 relative flex flex-col justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 ${
+              className={`p-4 rounded-xl border text-left transition-all duration-200 active:scale-[0.99] relative flex flex-col justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 ${
                 currentMode === 'enforce'
                   ? 'bg-rose-500/15 border-rose-500/60 text-rose-200 shadow-lg shadow-rose-950/40 ring-1 ring-rose-500/50'
                   : !isReadyForEnforce
@@ -929,7 +929,7 @@ export default function ProxyShieldControls() {
             onClick={handleOpenRollbackModal}
             disabled={isRollingBack}
             aria-busy={isRollingBack}
-            className="shrink-0 px-4 py-2.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition shadow-md shadow-amber-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 disabled:opacity-50 flex items-center space-x-1.5"
+            className="shrink-0 px-4 py-2.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition-all duration-150 active:scale-[0.98] shadow-md shadow-amber-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 disabled:opacity-50 flex items-center space-x-1.5"
           >
             <IconRefresh className={`w-3.5 h-3.5 ${isRollingBack ? 'animate-spin' : ''}`} />
             <span>{isRollingBack ? 'Rolling back...' : 'Rollback to Shadow'}</span>
@@ -1045,7 +1045,7 @@ export default function ProxyShieldControls() {
                             onClick={() => handleRunReplay(rule.id)}
                             disabled={isRunningReplay || isVerifyingReadiness}
                             aria-busy={isRunningReplay}
-                            className="px-3.5 py-1.5 rounded-lg bg-[#0E7490] hover:bg-[#0891B2] disabled:bg-slate-800 disabled:text-slate-600 text-white font-sans text-xs font-semibold transition-all duration-150 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
+                            className="px-3.5 py-1.5 rounded-lg bg-[#0E7490] hover:bg-[#0891B2] disabled:bg-slate-800 disabled:text-slate-600 text-white font-sans text-xs font-semibold transition-all duration-150 active:scale-[0.98] shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
                           >
                             {isRunningReplay ? (
                               <span className="flex items-center space-x-1.5">
@@ -1120,7 +1120,7 @@ export default function ProxyShieldControls() {
                   {/* Progress bar */}
                   <div className="w-full h-2 rounded-full bg-slate-950 overflow-hidden border border-emerald-500/20">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-500"
+                      className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-300 ease-out motion-reduce:transition-none"
                       style={{ width: `${benignPassPct}%` }}
                       role="progressbar"
                       aria-valuenow={benignPassPct}
@@ -1150,7 +1150,7 @@ export default function ProxyShieldControls() {
                   {/* Progress bar */}
                   <div className="w-full h-2 rounded-full bg-slate-950 overflow-hidden border border-emerald-500/20">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-emerald-400 transition-all duration-500"
+                      className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-emerald-400 transition-all duration-300 ease-out motion-reduce:transition-none"
                       style={{ width: `${attackInterceptPct}%` }}
                       role="progressbar"
                       aria-valuenow={attackInterceptPct}
@@ -1184,7 +1184,7 @@ export default function ProxyShieldControls() {
         >
           <div
             ref={modeModalRef}
-            className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl border border-emerald-500/30 bg-[#0A1210] p-6 shadow-2xl space-y-4"
+            className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl border border-emerald-500/30 bg-[#0A1210] p-6 shadow-2xl space-y-4 animate-modal-in motion-reduce:animate-none"
           >
             <div className="flex items-center space-x-3 pb-3 border-b border-emerald-500/20">
               <div className="w-10 h-10 rounded-full bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center shrink-0">
@@ -1232,7 +1232,7 @@ export default function ProxyShieldControls() {
                 type="button"
                 onClick={handleCloseModeModal}
                 disabled={isUpdatingMode}
-                className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/[0.06] transition focus:outline-none focus-visible:ring-1 focus-visible:ring-emerald-400 disabled:opacity-50"
+                className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/[0.06] transition-all duration-150 active:scale-[0.98] focus:outline-none focus-visible:ring-1 focus-visible:ring-emerald-400 disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -1240,7 +1240,7 @@ export default function ProxyShieldControls() {
                 type="button"
                 onClick={handleConfirmModeChange}
                 disabled={isUpdatingMode}
-                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${
+                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all duration-150 active:scale-[0.98] shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${
                   pendingMode === 'enforce'
                     ? 'bg-rose-600 hover:bg-rose-500 text-white focus-visible:ring-rose-400'
                     : 'bg-[#10B981] hover:bg-[#059669] text-black focus-visible:ring-emerald-400'
@@ -1268,7 +1268,7 @@ export default function ProxyShieldControls() {
         >
           <div
             ref={rollbackModalRef}
-            className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl border border-amber-500/40 bg-[#0D1410] p-6 shadow-2xl shadow-amber-950/30 space-y-4"
+            className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl border border-amber-500/40 bg-[#0D1410] p-6 shadow-2xl shadow-amber-950/30 space-y-4 animate-modal-in motion-reduce:animate-none"
           >
             <div className="flex items-center space-x-3 pb-3 border-b border-amber-500/20">
               <div className="w-10 h-10 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shrink-0">
@@ -1291,7 +1291,7 @@ export default function ProxyShieldControls() {
                 type="button"
                 onClick={handleCloseRollbackModal}
                 disabled={isRollingBack}
-                className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/[0.06] transition focus:outline-none focus-visible:ring-1 focus-visible:ring-amber-400 disabled:opacity-50"
+                className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/[0.06] transition-all duration-150 active:scale-[0.98] focus:outline-none focus-visible:ring-1 focus-visible:ring-amber-400 disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -1299,7 +1299,7 @@ export default function ProxyShieldControls() {
                 type="button"
                 onClick={handleConfirmRollback}
                 disabled={isRollingBack}
-                className="px-4 py-1.5 rounded-lg text-xs font-bold text-slate-950 bg-amber-500 hover:bg-amber-400 transition shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 disabled:opacity-60 flex items-center space-x-1.5"
+                className="px-4 py-1.5 rounded-lg text-xs font-bold text-slate-950 bg-amber-500 hover:bg-amber-400 transition-all duration-150 active:scale-[0.98] shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 disabled:opacity-60 flex items-center space-x-1.5"
               >
                 {isRollingBack ? (
                   <>

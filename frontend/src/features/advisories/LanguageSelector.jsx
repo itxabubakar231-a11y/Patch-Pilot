@@ -27,7 +27,7 @@ export default function LanguageSelector({ selectedLanguage, onSelectLanguage })
               type="button"
               onClick={() => onSelectLanguage(lang.code)}
               aria-pressed={isSelected}
-              className={`px-3 py-1 rounded text-xs font-medium transition duration-150 focus:outline-none focus-visible:ring-1 focus-visible:ring-emerald-400 ${
+              className={`px-3 py-1 rounded text-xs font-medium transition-all duration-150 active:scale-95 focus:outline-none focus-visible:ring-1 focus-visible:ring-emerald-400 ${
                 isSelected
                   ? 'bg-[#10B981] text-black font-bold shadow-sm'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-emerald-950/30'
