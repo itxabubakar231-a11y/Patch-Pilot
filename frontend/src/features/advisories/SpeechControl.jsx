@@ -17,9 +17,38 @@ function isSameVoice(v1, v2) {
   )
 }
 
+function IconSpeaker({ className = 'w-3.5 h-3.5', ...props }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+    </svg>
+  )
+}
+
+function IconSquare({ className = 'w-3.5 h-3.5', ...props }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true" {...props}>
+      <rect x="6" y="6" width="12" height="12" rx="1" />
+    </svg>
+  )
+}
+
+function IconAlertNotice({ className = 'w-4 h-4', ...props }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+      <line x1="12" y1="9" x2="12" y2="13" />
+      <line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+  )
+}
+
 /**
  * SpeechControl Component (Zone 4)
  * Provides user-initiated text-to-speech using the browser Web Speech API.
+ * Styled to exact visual parity with the approved Stage 1 & Stage 2 Emerald Design System.
  * 
  * Security & Correctness Guarantees:
  * - Fresh explicit user consent is mandatory for every remote/network voice playback.
@@ -33,6 +62,7 @@ function isSameVoice(v1, v2) {
  * - Holds active utterance in useRef to prevent Chromium garbage collection speech-freeze bug.
  * - Monotonic utterance ID counter prevents stale async onend/onerror callbacks from corrupting newer state.
  * - Full WCAG keyboard and screen reader accessibility (aria-label, aria-pressed, role="alertdialog", role="status").
+ * - 100% SVG outline icons (zero emojis).
  */
 export default function SpeechControl({ textToSpeak, languageCode, languageLabel }) {
   const isSpeechSupported = typeof window !== 'undefined' && 'speechSynthesis' in window
@@ -210,7 +240,7 @@ export default function SpeechControl({ textToSpeak, languageCode, languageLabel
     }
   }, [languageCode, textToSpeak, isSpeechSupported, stopSpeech])
 
-  // Move keyboard focus to Allow button when remote consent dialog appears
+  // Focus management when remote voice consent alertdialog appears
   useEffect(() => {
     if (showRemoteConsent && allowButtonRef.current) {
       allowButtonRef.current.focus()
@@ -218,21 +248,22 @@ export default function SpeechControl({ textToSpeak, languageCode, languageLabel
   }, [showRemoteConsent])
 
   /**
-   * Internal routine to execute speech playback once voice is confirmed and consented.
+   * Executes speech synthesis for the approved voice.
    */
   const executePlayback = (voiceToUse) => {
-    if (!isSpeechSupported || !textToSpeak || !voiceToUse) return
+    if (!isSpeechSupported || !voiceToUse || !textToSpeak) return
 
     stopSpeech()
     setErrorMessage(null)
 
-    const thisUtteranceId = ++utteranceIdRef.current
-    const spokenText = prepareTextForSpeech(textToSpeak)
-
     try {
-      const utterance = new SpeechSynthesisUtterance(spokenText)
+      // Monotonic utterance counter (FIX 2)
+      const thisUtteranceId = ++utteranceIdRef.current
 
-      // Explicitly assign matched voice object and language code
+      // Pre-process text to expand acronyms, normalize security IDs, and strip markdown
+      const processedText = prepareTextForSpeech(textToSpeak)
+      const utterance = new SpeechSynthesisUtterance(processedText)
+
       utterance.voice = voiceToUse
       utterance.lang = voiceToUse.lang || 'en-US'
 
@@ -324,7 +355,7 @@ export default function SpeechControl({ textToSpeak, languageCode, languageLabel
    */
   const handleAllowRemote = () => {
     setShowRemoteConsent(false)
-    // Restore keyboard focus to the Play/Stop button (FIX 3)
+    // Restore keyboard focus to the Play/Stop button
     if (playButtonRef.current) {
       playButtonRef.current.focus()
     }
@@ -339,7 +370,7 @@ export default function SpeechControl({ textToSpeak, languageCode, languageLabel
   const handleCancelRemote = () => {
     setShowRemoteConsent(false)
     setStatusMessage('Remote speech playback cancelled by user.')
-    // Restore keyboard focus to the Play/Stop button (FIX 3)
+    // Restore keyboard focus to the Play/Stop button
     if (playButtonRef.current) {
       playButtonRef.current.focus()
     }
@@ -396,24 +427,33 @@ export default function SpeechControl({ textToSpeak, languageCode, languageLabel
           onClick={handleToggleSpeak}
           aria-label={ariaLabel}
           aria-pressed={isSpeaking}
-          className={`inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 ${
+          className={`inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${
             isSpeaking
               ? 'bg-amber-500/20 text-amber-300 border border-amber-500/50 shadow-sm shadow-amber-950/30 hover:bg-amber-500/30'
-              : 'bg-slate-800/90 hover:bg-slate-700/90 text-slate-200 border border-slate-700 shadow-sm hover:border-slate-600'
+              : 'bg-[#0C1A14] hover:bg-[#12261F] text-slate-200 border border-emerald-500/25 shadow-sm hover:border-emerald-500/40'
           }`}
         >
-          <span>
-            {isSpeaking
-              ? '⏹ Stop'
-              : matchState.isFallback
-              ? '🔊 Listen (English fallback)'
-              : '🔊 Listen'}
-          </span>
+          {isSpeaking ? (
+            <>
+              <IconSquare className="w-3 h-3 text-amber-400 shrink-0" />
+              <span>Stop</span>
+            </>
+          ) : matchState.isFallback ? (
+            <>
+              <IconSpeaker className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <span>Listen (English fallback)</span>
+            </>
+          ) : (
+            <>
+              <IconSpeaker className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <span>Listen</span>
+            </>
+          )}
         </button>
 
         {/* Roman Urdu phonetic disclaimer badge */}
         {matchState.isFallback && !isSpeaking && (
-          <span className="text-[10px] font-mono text-sky-400/90 bg-sky-950/60 border border-sky-800/50 px-2 py-0.5 rounded">
+          <span className="text-[10px] font-mono text-cyan-400/90 bg-cyan-950/40 border border-cyan-800/40 px-2 py-0.5 rounded">
             Phonetic approximation
           </span>
         )}
@@ -430,36 +470,36 @@ export default function SpeechControl({ textToSpeak, languageCode, languageLabel
         )}
       </div>
 
-      {/* Fresh Remote Voice Consent Alert Dialog (Requirements 5, 10 & Fix 1) */}
+      {/* Fresh Remote Voice Consent Alert Dialog */}
       {showRemoteConsent && matchState.voice && (
         <div
           role="alertdialog"
           aria-labelledby="remote-voice-title"
           aria-describedby="remote-voice-desc"
           onKeyDown={handleConsentKeyDown}
-          className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/40 text-xs text-amber-200 mt-1 max-w-sm space-y-2.5 shadow-xl backdrop-blur-md"
+          className="p-4 rounded-xl bg-[#0D1410] border border-amber-500/40 text-xs text-amber-200 mt-2 max-w-sm space-y-3 shadow-2xl backdrop-blur-md"
         >
-          <div id="remote-voice-title" className="font-semibold text-amber-300 flex items-center space-x-1.5">
-            <span>⚠️</span>
+          <div id="remote-voice-title" className="font-semibold text-amber-300 flex items-center space-x-2">
+            <IconAlertNotice className="w-4 h-4 text-amber-400 shrink-0" />
             <span>External Speech Service Notice</span>
           </div>
-          <p id="remote-voice-desc" className="text-[11px] leading-relaxed text-amber-200/90">
+          <p id="remote-voice-desc" className="text-[11px] leading-relaxed text-slate-300">
             Only a remote network voice (<code className="text-amber-300 font-mono text-[10px]">{matchState.voice.name}</code>) is available for{' '}
             <strong>{effectiveLabel}</strong>. Spoken advisory text will be transmitted to your browser&apos;s external speech service.
           </p>
-          <div className="flex items-center space-x-2 pt-0.5">
+          <div className="flex items-center space-x-2 pt-1 border-t border-amber-500/20">
             <button
               ref={allowButtonRef}
               type="button"
               onClick={handleAllowRemote}
-              className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:ring-offset-1 focus:ring-offset-slate-900"
+              className="px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300"
             >
               Allow &amp; Play
             </button>
             <button
               type="button"
               onClick={handleCancelRemote}
-              className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition focus:outline-none focus:ring-2 focus:ring-slate-500"
+              className="px-3.5 py-1.5 rounded-lg bg-[#070D0B] hover:bg-white/[0.06] text-slate-300 text-xs font-medium border border-slate-700 transition focus:outline-none focus-visible:ring-1 focus-visible:ring-slate-500"
             >
               Cancel
             </button>
