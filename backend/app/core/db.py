@@ -11,6 +11,7 @@ Connections enforce:
 
 import hashlib
 import json
+import os
 import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
@@ -162,6 +163,21 @@ def sanitize_path(raw_path: str) -> str:
     return clean_path[:200]
 
 
+def get_db_path(override_path: Union[str, Path, None] = None) -> Path:
+    """
+    Resolves the SQLite database path.
+    1. If explicit override_path is passed, use it.
+    2. Else if PATCHPILOT_DB_PATH environment variable is set (read at call time), use it.
+    3. Else fallback to default DATABASE_PATH from config.py.
+    """
+    if override_path is not None:
+        return Path(override_path)
+    env_path = os.getenv("PATCHPILOT_DB_PATH")
+    if env_path and env_path.strip():
+        return Path(env_path.strip())
+    return DATABASE_PATH
+
+
 def connect(db_path: Union[str, Path, None] = None) -> sqlite3.Connection:
     """
     Returns an open sqlite3 connection configured for PatchPilot.
@@ -172,7 +188,7 @@ def connect(db_path: Union[str, Path, None] = None) -> sqlite3.Connection:
       - PRAGMA journal_mode = WAL;
       - PRAGMA busy_timeout = 5000;
     """
-    target = Path(db_path) if db_path is not None else DATABASE_PATH
+    target = get_db_path(db_path)
     if str(target) != ":memory:":
         target.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(str(target))
@@ -190,7 +206,7 @@ def init_db(db_path: Union[str, Path, None] = None) -> None:
     sets PRAGMA user_version = 1, and creates seed data if not present.
     Running init_db multiple times is idempotent and never duplicates records.
     """
-    target = Path(db_path) if db_path is not None else DATABASE_PATH
+    target = get_db_path(db_path)
     if str(target) != ":memory:":
         target.parent.mkdir(parents=True, exist_ok=True)
 
@@ -276,6 +292,54 @@ def set_proxy_mode(mode: str, db_path: Union[str, Path, None] = None) -> str:
                     (mode, now),
                 )
         return mode
+    finally:
+        conn.close()
+
+
+def downgrade_enforce_to_shadow(
+    reason: str,
+    error_code: Optional[str] = None,
+    failed_rule_id: Optional[int] = None,
+    db_path: Union[str, Path, None] = None,
+) -> bool:
+    """
+    Atomically downgrades proxy_mode from 'enforce' to 'shadow' if and only if
+    the current mode is 'enforce'. Writes an audit event with safe metadata in
+    the same transaction.
+
+    Returns True only for the call that actually executed the mode transition.
+    """
+    conn = connect(db_path)
+    now = utc_now_iso()
+    try:
+        with conn:
+            cur = conn.execute(
+                """
+                UPDATE app_settings
+                SET proxy_mode = 'shadow', updated_at = ?
+                WHERE id = 1 AND proxy_mode = 'enforce'
+                """,
+                (now,),
+            )
+            if cur.rowcount > 0:
+                safe_metadata = {
+                    "previous_mode": "enforce",
+                    "new_mode": "shadow",
+                    "reason": reason,
+                    "error_code": error_code,
+                    "failed_rule_id": failed_rule_id,
+                }
+                safe_metadata_json = json.dumps(safe_metadata, sort_keys=True)
+                conn.execute(
+                    """
+                    INSERT INTO audit_events (
+                        event_type, resource_type, resource_id, safe_metadata_json, created_at
+                    ) VALUES ('PROXY_MODE_DOWNGRADE', 'proxy', 1, ?, ?)
+                    """,
+                    (safe_metadata_json, now),
+                )
+                return True
+            return False
     finally:
         conn.close()
 

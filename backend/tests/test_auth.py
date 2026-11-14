@@ -73,6 +73,22 @@ def test_verify_admin_token_incorrect_value():
     assert exc_info.value.message == "Invalid admin token."
 
 
+@pytest.mark.anyio
+async def test_verify_admin_token_non_ascii_value():
+    """Non-ASCII Authorization value returns 401 with standard error envelope, not 500."""
+    with pytest.raises(AdminAuthException) as exc_info:
+        verify_admin_token(authorization="Bearer non_ascii_🔑_token_éàü")
+
+    assert exc_info.value.status_code == status.HTTP_401_UNAUTHORIZED
+    assert exc_info.value.code == "UNAUTHORIZED"
+    assert exc_info.value.message == "Invalid admin token."
+
+    # Verify standard error envelope formatted by exception handler
+    response: JSONResponse = await admin_auth_exception_handler(None, exc_info.value)
+    assert response.status_code == 401
+    assert response.body.decode("utf-8") == '{"error":{"code":"UNAUTHORIZED","message":"Invalid admin token."}}'
+
+
 def test_verify_admin_token_unconfigured_server_token(monkeypatch):
     """When server environment token is missing, fails closed with 401."""
     monkeypatch.delenv("PATCHPILOT_ADMIN_TOKEN", raising=False)

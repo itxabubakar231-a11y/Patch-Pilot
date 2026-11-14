@@ -94,9 +94,9 @@ def validate_fixture_data(
             raise FixtureValidationError(
                 f"Benign request #{req_idx} missing valid 'query_params' mapping."
             )
-        if "expected_match" not in req or not isinstance(req["expected_match"], bool):
+        if req.get("expected_match") is not False:
             raise FixtureValidationError(
-                f"Benign request #{req_idx} missing boolean 'expected_match'."
+                f"Benign request #{req_idx} 'expected_match' must be boolean False."
             )
 
     for req_idx, req in enumerate(attack_requests):
@@ -106,9 +106,9 @@ def validate_fixture_data(
             raise FixtureValidationError(
                 f"Attack request #{req_idx} missing valid 'query_params' mapping."
             )
-        if "expected_match" not in req or not isinstance(req["expected_match"], bool):
+        if req.get("expected_match") is not True:
             raise FixtureValidationError(
-                f"Attack request #{req_idx} missing boolean 'expected_match'."
+                f"Attack request #{req_idx} 'expected_match' must be boolean True."
             )
 
     return data

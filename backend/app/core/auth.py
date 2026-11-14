@@ -75,7 +75,9 @@ def verify_admin_token(authorization: Optional[str] = Header(None)) -> str:
         )
 
     token = authorization.split("Bearer ", 1)[1].strip()
-    if not secrets.compare_digest(token, expected_token.strip()):
+    if not secrets.compare_digest(
+        token.encode("utf-8"), expected_token.strip().encode("utf-8")
+    ):
         raise AdminAuthException(
             code="UNAUTHORIZED",
             message="Invalid admin token.",

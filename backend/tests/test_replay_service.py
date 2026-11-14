@@ -250,6 +250,33 @@ def test_fixture_validation_rejects_missing_or_bad_fields(valid_fixture_dict: Di
         validate_fixture_data(dict(valid_fixture_dict, benign_requests=bad_reqs2))
 
 
+def test_fixture_validation_expected_match_strict_boolean(valid_fixture_dict: Dict[str, Any]):
+    """Strictly require expected_match is False for benign and True for attack requests."""
+    # Benign with True
+    bad_benign_true = [{"id": "b1", "path": "/", "query_params": {}, "expected_match": True}]
+    with pytest.raises(FixtureValidationError) as exc:
+        validate_fixture_data(dict(valid_fixture_dict, benign_requests=bad_benign_true))
+    assert "must be boolean False" in str(exc.value)
+
+    # Benign with integer 0 (not bool False)
+    bad_benign_zero = [{"id": "b1", "path": "/", "query_params": {}, "expected_match": 0}]
+    with pytest.raises(FixtureValidationError) as exc:
+        validate_fixture_data(dict(valid_fixture_dict, benign_requests=bad_benign_zero))
+    assert "must be boolean False" in str(exc.value)
+
+    # Attack with False
+    bad_attack_false = [{"id": "a1", "path": "/", "query_params": {}, "expected_match": False}]
+    with pytest.raises(FixtureValidationError) as exc:
+        validate_fixture_data(dict(valid_fixture_dict, attack_requests=bad_attack_false))
+    assert "must be boolean True" in str(exc.value)
+
+    # Attack with integer 1 (not bool True)
+    bad_attack_one = [{"id": "a1", "path": "/", "query_params": {}, "expected_match": 1}]
+    with pytest.raises(FixtureValidationError) as exc:
+        validate_fixture_data(dict(valid_fixture_dict, attack_requests=bad_attack_one))
+    assert "must be boolean True" in str(exc.value)
+
+
 def test_load_fixture_from_file_and_file_not_found(tmp_path: Path, valid_fixture_dict: Dict[str, Any]):
     """Verify loading fixtures from a filesystem path and handling missing files."""
     # Custom temp fixture file
@@ -412,6 +439,50 @@ def test_enforce_gate_fails_when_config_change_invalidates_previous_replay(
     assert gate.ready is False
     assert gate.error_code == "REPLAY_REQUIRED"
     assert gate.failed_rule_id == 1
+
+
+def test_enforce_gate_multiple_rules_one_missing_replay(
+    temp_db_path: Path, valid_fixture_dict: Dict[str, Any]
+):
+    """
+    When multiple rules are enabled and approved, ALL must have passing replays.
+    Rule A (id=1) has a passing replay, Rule B (id=2) has no replay: gate must reject and report Rule B.
+    """
+    # 1. Pass Rule A replay
+    execute_rule_replay(
+        rule_id=1,
+        fixture_version="lab-v1",
+        fixture_data=valid_fixture_dict,
+        db_path=temp_db_path,
+    )
+
+    # 2. Insert Rule B as enabled and human_approved, but without a replay run
+    rule_b_config = {"name": "rule_b_marker", "value": "true"}
+    rule_b_config_json = json.dumps(rule_b_config, sort_keys=True)
+    rule_b_digest = compute_rule_digest("query_param_equals", rule_b_config)
+    now = utc_now_iso()
+
+    conn = connect(temp_db_path)
+    try:
+        with conn:
+            cur = conn.execute(
+                """
+                INSERT INTO security_rules (
+                    name, matcher_type, match_config_json, rule_digest,
+                    enabled, human_approved, source_kind, created_at, updated_at
+                ) VALUES ('Rule B', 'query_param_equals', ?, ?, 1, 1, 'manual', ?, ?)
+                """,
+                (rule_b_config_json, rule_b_digest, now, now),
+            )
+            rule_b_id = cur.lastrowid
+    finally:
+        conn.close()
+
+    # 3. Check gate: must fail and explicitly identify Rule B as failed_rule_id
+    gate = check_enforce_gate(db_path=temp_db_path)
+    assert gate.ready is False
+    assert gate.error_code == "REPLAY_REQUIRED"
+    assert gate.failed_rule_id == rule_b_id
 
 
 def test_replay_service_wrapper_methods(temp_db_path: Path, valid_fixture_dict: Dict[str, Any]):
