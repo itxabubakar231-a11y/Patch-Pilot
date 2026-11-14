@@ -361,7 +361,7 @@ export default function SecurityOverview({ onNavigate }) {
               type="button"
               onClick={() => fetchOverview(true)}
               disabled={isRefreshing}
-              className="bg-[#10B981] hover:bg-[#059669] text-black font-semibold px-5 py-2.5 rounded-lg text-sm flex items-center space-x-2 shadow-[0_0_20px_rgba(16,185,129,0.25)] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 disabled:opacity-60"
+              className="bg-[#10B981] hover:bg-[#059669] text-black font-semibold px-5 py-2.5 rounded-lg text-sm flex items-center space-x-2 shadow-[0_0_20px_rgba(16,185,129,0.25)] transition-all duration-150 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 disabled:opacity-60"
               title="Refresh real-time security posture and proxy telemetry"
             >
               <IconRefresh className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
@@ -373,7 +373,7 @@ export default function SecurityOverview({ onNavigate }) {
               onClick={() => {
                 if (onNavigate) onNavigate('advisories')
               }}
-              className="bg-[#0C1A14] hover:bg-[#12261F] text-slate-200 border border-emerald-500/25 px-4 py-2.5 rounded-lg text-sm font-medium flex items-center space-x-2 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+              className="bg-[#0C1A14] hover:bg-[#12261F] text-slate-200 border border-emerald-500/25 px-4 py-2.5 rounded-lg text-sm font-medium flex items-center space-x-2 transition-all duration-150 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
               title="Open Zone 4 Security Advisory and Threat Intelligence reports"
             >
               <IconDocument className="w-4 h-4 text-slate-300" />
@@ -443,7 +443,7 @@ export default function SecurityOverview({ onNavigate }) {
         className="mb-7 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4"
       >
         {/* Card 1: Proxy Mode (Without hardcoded fallback) */}
-        <div className="rounded-xl border border-emerald-500/20 bg-[#0C1615]/90 p-4 flex flex-col justify-between h-[140px] shadow-sm backdrop-blur-md">
+        <div className="rounded-xl border border-emerald-500/20 bg-[#0C1615]/90 p-4 flex flex-col justify-between h-[140px] shadow-sm backdrop-blur-md hover:-translate-y-0.5 hover:border-emerald-400/50 hover:shadow-[0_4px_24px_rgba(16,185,129,0.22)] transition-all duration-200 ease-out motion-reduce:hover:translate-y-0 motion-reduce:transition-none">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <IconShield className="w-4 h-4 text-emerald-400" />
@@ -462,7 +462,7 @@ export default function SecurityOverview({ onNavigate }) {
         </div>
 
         {/* Card 2: Traffic (Preserves legitimate 0 values) */}
-        <div className="rounded-xl border border-emerald-500/20 bg-[#0C1615]/90 p-4 flex flex-col justify-between h-[140px] shadow-sm backdrop-blur-md">
+        <div className="rounded-xl border border-emerald-500/20 bg-[#0C1615]/90 p-4 flex flex-col justify-between h-[140px] shadow-sm backdrop-blur-md hover:-translate-y-0.5 hover:border-emerald-400/50 hover:shadow-[0_4px_24px_rgba(16,185,129,0.22)] transition-all duration-200 ease-out motion-reduce:hover:translate-y-0 motion-reduce:transition-none">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <IconLayers className="w-4 h-4 text-emerald-400" />
@@ -486,7 +486,7 @@ export default function SecurityOverview({ onNavigate }) {
         </div>
 
         {/* Card 3: Upstream Stack (Strictly source-backed, zero fabricated fallback) */}
-        <div className="rounded-xl border border-emerald-500/20 bg-[#0C1615]/90 p-4 flex flex-col justify-between h-[140px] shadow-sm backdrop-blur-md">
+        <div className="rounded-xl border border-emerald-500/20 bg-[#0C1615]/90 p-4 flex flex-col justify-between h-[140px] shadow-sm backdrop-blur-md hover:-translate-y-0.5 hover:border-emerald-400/50 hover:shadow-[0_4px_24px_rgba(16,185,129,0.22)] transition-all duration-200 ease-out motion-reduce:hover:translate-y-0 motion-reduce:transition-none">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <IconServer className="w-4 h-4 text-emerald-400" />
@@ -509,7 +509,7 @@ export default function SecurityOverview({ onNavigate }) {
         </div>
 
         {/* Card 4: AI Intelligence (Truthful Zone 4 advisory state, decoupled from proxy markers) */}
-        <div className="rounded-xl border border-emerald-500/20 bg-[#0C1615]/90 p-4 flex flex-col justify-between h-[140px] shadow-sm backdrop-blur-md">
+        <div className="rounded-xl border border-emerald-500/20 bg-[#0C1615]/90 p-4 flex flex-col justify-between h-[140px] shadow-sm backdrop-blur-md hover:-translate-y-0.5 hover:border-emerald-400/50 hover:shadow-[0_4px_24px_rgba(16,185,129,0.22)] transition-all duration-200 ease-out motion-reduce:hover:translate-y-0 motion-reduce:transition-none">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <IconCpu className="w-4 h-4 text-emerald-400" />
@@ -570,7 +570,7 @@ export default function SecurityOverview({ onNavigate }) {
         {/* Main Forwarding Pipeline: Three Wide Horizontal Nodes */}
         <div className="flex flex-wrap lg:flex-nowrap items-center justify-between gap-3 pt-3">
           {/* Node 1: Client / Browser (Cyan Outline) */}
-          <div className="flex-1 min-w-[240px] rounded-xl border border-cyan-500/35 bg-[#09151C]/90 p-4 flex items-center space-x-3.5 shadow-sm min-h-[86px]">
+          <div className="flex-1 min-w-[240px] rounded-xl border border-cyan-500/35 bg-[#09151C]/90 p-4 flex items-center space-x-3.5 shadow-sm min-h-[86px] transition-all duration-200 hover:border-cyan-400/60 hover:shadow-[0_0_15px_rgba(6,182,212,0.15)] motion-reduce:transition-none">
             <div className="w-10 h-10 rounded-lg bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0">
               <IconMonitor className="w-5 h-5" />
             </div>
@@ -588,7 +588,7 @@ export default function SecurityOverview({ onNavigate }) {
           </span>
 
           {/* Node 2: PatchPilot Proxy Shield (Centerpiece Glowing Hero Node) */}
-          <div className="flex-1 min-w-[270px] rounded-xl border-2 border-emerald-400 bg-[#042416] p-4 flex items-center space-x-3.5 shadow-[0_0_24px_rgba(16,185,129,0.35)] ring-1 ring-emerald-400/50 min-h-[96px]">
+          <div className="flex-1 min-w-[270px] rounded-xl border-2 border-emerald-400 bg-[#042416] p-4 flex items-center space-x-3.5 shadow-[0_0_24px_rgba(16,185,129,0.35)] ring-1 ring-emerald-400/50 min-h-[96px] transition-all duration-200 hover:shadow-[0_0_32px_rgba(16,185,129,0.5)] motion-reduce:transition-none">
             <div className="w-10 h-10 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
               <IconShieldCheck className="w-6 h-6" />
             </div>
@@ -604,7 +604,7 @@ export default function SecurityOverview({ onNavigate }) {
           </span>
 
           {/* Node 3: Upstream Target Lab (Cyan Outline) */}
-          <div className="flex-1 min-w-[240px] rounded-xl border border-cyan-500/35 bg-[#09151C]/90 p-4 flex items-center space-x-3.5 shadow-sm min-h-[86px]">
+          <div className="flex-1 min-w-[240px] rounded-xl border border-cyan-500/35 bg-[#09151C]/90 p-4 flex items-center space-x-3.5 shadow-sm min-h-[86px] transition-all duration-200 hover:border-cyan-400/60 hover:shadow-[0_0_15px_rgba(6,182,212,0.15)] motion-reduce:transition-none">
             <div className="w-10 h-10 rounded-lg bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0">
               <IconServer className="w-5 h-5" />
             </div>
@@ -627,7 +627,7 @@ export default function SecurityOverview({ onNavigate }) {
         </div>
 
         {/* Out-of-Band Control Plane Card: Management API Port 8000 */}
-        <div className="w-full max-w-xl mx-auto rounded-xl border border-cyan-500/35 bg-[#081822]/90 p-3.5 px-5 flex items-center justify-between shadow-sm">
+        <div className="w-full max-w-xl mx-auto rounded-xl border border-cyan-500/35 bg-[#081822]/90 p-3.5 px-5 flex items-center justify-between shadow-sm transition-all duration-200 hover:border-cyan-400/60 motion-reduce:transition-none">
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 rounded-lg bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0">
               <IconSettings className="w-4 h-4" />

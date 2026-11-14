@@ -3,6 +3,7 @@
  *
  * Integrates Member 4's AdvisoryPanel, LanguageSelector, and SpeechControl
  * into the main dashboard shell. Connects advisory analysis to apiClient.
+ * Styled to exact visual parity with the approved Stage 1 & Stage 2 Emerald Design System.
  * Conforms strictly to docs/API.md (Section 3.I) and docs/DESIGN.md (Section 5).
  */
 
@@ -14,6 +15,7 @@ import {
   getApiMode,
 } from '../../services/apiClient.js'
 import { mockAdvisories } from '../../mocks/index.js'
+import { IconAlertTriangle, IconClose } from '../../components/Icons.jsx'
 
 export default function AdvisoriesSection() {
   const mode = getApiMode()
@@ -23,7 +25,7 @@ export default function AdvisoriesSection() {
   )
   const [loading, setLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState(null)
-  // FIX 2: Track actual request lifecycle and response attribution independently from form inputs
+  // Track actual request lifecycle and response attribution independently from form inputs
   const [requestStatus, setRequestStatus] = useState('idle') // 'idle' | 'analyzing' | 'success' | 'error'
   const [completedAnalysis, setCompletedAnalysis] = useState(null)
 
@@ -84,10 +86,10 @@ export default function AdvisoriesSection() {
         <div
           role="alert"
           aria-live="assertive"
-          className="p-4 rounded-xl text-xs flex items-start justify-between gap-3 bg-rose-500/10 text-rose-300 border border-rose-500/30 shadow-lg shadow-rose-950/20 backdrop-blur-md"
+          className="p-4 rounded-xl text-xs flex items-start justify-between gap-3 bg-[#0C1615]/90 text-rose-300 border border-rose-500/30 shadow-lg backdrop-blur-md"
         >
           <div className="flex items-start space-x-2.5">
-            <span className="text-base leading-none">⚠️</span>
+            <IconAlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
             <div className="space-y-0.5">
               <span className="font-semibold block text-rose-200">Advisory Analysis Error</span>
               <p className="text-[11px] leading-relaxed text-rose-300/90">{errorMsg}</p>
@@ -96,10 +98,10 @@ export default function AdvisoriesSection() {
           <button
             type="button"
             onClick={handleDismissError}
-            className="text-slate-400 hover:text-white text-xs p-1 rounded hover:bg-slate-800/60 transition focus:outline-none focus-visible:ring-1 focus-visible:ring-sky-400"
+            className="text-slate-400 hover:text-white text-xs p-1 rounded hover:bg-white/[0.06] transition focus:outline-none focus-visible:ring-1 focus-visible:ring-rose-400"
             aria-label="Dismiss error"
           >
-            ✕
+            <IconClose className="w-3.5 h-3.5" />
           </button>
         </div>
       )}
