@@ -1,8 +1,9 @@
 /**
- * LanguageSelector Component
+ * LanguageSelector Component (Zone 4)
  * Supports English, Urdu (اردو), Roman Urdu, Arabic (العربية), and Spanish (Español).
- * Conforms to docs/DESIGN.md.
+ * Styled to exact visual parity with the approved Stage 1 & Stage 2 Emerald Design System.
  */
+
 export const SUPPORTED_LANGUAGES = [
   { code: 'en', label: 'English', dir: 'ltr' },
   { code: 'ur', label: 'اردو', dir: 'rtl' },
@@ -14,10 +15,10 @@ export const SUPPORTED_LANGUAGES = [
 export default function LanguageSelector({ selectedLanguage, onSelectLanguage }) {
   return (
     <div className="flex flex-wrap gap-2 items-center">
-      <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+      <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider font-mono">
         Language:
       </span>
-      <div className="flex flex-wrap gap-1.5 bg-slate-900/80 p-1 rounded-lg border border-slate-800">
+      <div className="flex flex-wrap gap-1 bg-[#070D0B] p-1 rounded-lg border border-emerald-500/20">
         {SUPPORTED_LANGUAGES.map((lang) => {
           const isSelected = selectedLanguage === lang.code
           return (
@@ -25,10 +26,11 @@ export default function LanguageSelector({ selectedLanguage, onSelectLanguage })
               key={lang.code}
               type="button"
               onClick={() => onSelectLanguage(lang.code)}
-              className={`px-2.5 py-1 rounded text-xs font-medium transition ${
+              aria-pressed={isSelected}
+              className={`px-3 py-1 rounded text-xs font-medium transition duration-150 focus:outline-none focus-visible:ring-1 focus-visible:ring-emerald-400 ${
                 isSelected
-                  ? 'bg-sky-500 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                  ? 'bg-[#10B981] text-black font-bold shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-emerald-950/30'
               }`}
             >
               {lang.label}
@@ -39,4 +41,3 @@ export default function LanguageSelector({ selectedLanguage, onSelectLanguage })
     </div>
   )
 }
-
