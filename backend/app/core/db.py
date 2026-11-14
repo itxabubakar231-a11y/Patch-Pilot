@@ -579,3 +579,82 @@ def add_audit_event(
             return int(cur.lastrowid)
     finally:
         conn.close()
+
+def get_app_settings(db_path: Union[str, Path, None] = None) -> Dict[str, Any]:
+    """Returns the current app_settings row (id, proxy_mode, updated_at)."""
+    conn = connect(db_path)
+    try:
+        row = conn.execute("SELECT id, proxy_mode, updated_at FROM app_settings WHERE id = 1").fetchone()
+        if row:
+            return {"id": int(row["id"]), "proxy_mode": str(row["proxy_mode"]), "updated_at": str(row["updated_at"])}
+        return {"id": 1, "proxy_mode": "shadow", "updated_at": utc_now_iso()}
+    finally:
+        conn.close()
+
+
+def get_last_replay_at(db_path: Union[str, Path, None] = None) -> Optional[str]:
+    """Returns the latest tested_at timestamp across all rule_replay_runs, or None."""
+    conn = connect(db_path)
+    try:
+        row = conn.execute(
+            "SELECT tested_at FROM rule_replay_runs ORDER BY tested_at DESC, id DESC LIMIT 1"
+        ).fetchone()
+        if row and row["tested_at"]:
+            return str(row["tested_at"])
+        return None
+    finally:
+        conn.close()
+
+
+def count_rules(db_path: Union[str, Path, None] = None) -> int:
+    """Returns total count of rules in security_rules."""
+    conn = connect(db_path)
+    try:
+        return int(conn.execute("SELECT COUNT(*) FROM security_rules").fetchone()[0])
+    finally:
+        conn.close()
+
+
+def count_enabled_rules(db_path: Union[str, Path, None] = None) -> int:
+    """Returns count of enabled rules in security_rules."""
+    conn = connect(db_path)
+    try:
+        return int(conn.execute("SELECT COUNT(*) FROM security_rules WHERE enabled = 1").fetchone()[0])
+    finally:
+        conn.close()
+
+
+def count_traffic_events(db_path: Union[str, Path, None] = None) -> int:
+    """Returns total count of records in traffic_events."""
+    conn = connect(db_path)
+    try:
+        return int(conn.execute("SELECT COUNT(*) FROM traffic_events").fetchone()[0])
+    finally:
+        conn.close()
+
+
+def count_advisories(db_path: Union[str, Path, None] = None) -> int:
+    """Returns total count of records in advisories."""
+    conn = connect(db_path)
+    try:
+        return int(conn.execute("SELECT COUNT(*) FROM advisories").fetchone()[0])
+    finally:
+        conn.close()
+
+
+def list_rules_paged(
+    limit: int = 50,
+    offset: int = 0,
+    db_path: Union[str, Path, None] = None,
+) -> List[Dict[str, Any]]:
+    """Returns paged security_rules with match_config parsed and booleans formatted."""
+    conn = connect(db_path)
+    try:
+        rows = conn.execute(
+            "SELECT * FROM security_rules ORDER BY id ASC LIMIT ? OFFSET ?",
+            (limit, offset),
+        ).fetchall()
+        return [_format_rule_row(r) for r in rows]
+    finally:
+        conn.close()
+
