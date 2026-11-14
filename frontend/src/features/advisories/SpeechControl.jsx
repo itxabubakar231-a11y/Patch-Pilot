@@ -477,7 +477,7 @@ export default function SpeechControl({ textToSpeak, languageCode, languageLabel
           aria-labelledby="remote-voice-title"
           aria-describedby="remote-voice-desc"
           onKeyDown={handleConsentKeyDown}
-          className="p-4 rounded-xl bg-[#0D1410] border border-amber-500/40 text-xs text-amber-200 mt-2 max-w-sm space-y-3 shadow-2xl backdrop-blur-md"
+          className="p-4 rounded-xl bg-[#0D1410] border border-amber-500/40 text-xs text-amber-200 mt-2 max-w-sm space-y-3 shadow-2xl backdrop-blur-md animate-modal-in motion-reduce:animate-none"
         >
           <div id="remote-voice-title" className="font-semibold text-amber-300 flex items-center space-x-2">
             <IconAlertNotice className="w-4 h-4 text-amber-400 shrink-0" />
@@ -492,14 +492,14 @@ export default function SpeechControl({ textToSpeak, languageCode, languageLabel
               ref={allowButtonRef}
               type="button"
               onClick={handleAllowRemote}
-              className="px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300"
+              className="px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition-all duration-150 active:scale-[0.98] shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300"
             >
               Allow &amp; Play
             </button>
             <button
               type="button"
               onClick={handleCancelRemote}
-              className="px-3.5 py-1.5 rounded-lg bg-[#070D0B] hover:bg-white/[0.06] text-slate-300 text-xs font-medium border border-slate-700 transition focus:outline-none focus-visible:ring-1 focus-visible:ring-slate-500"
+              className="px-3.5 py-1.5 rounded-lg bg-[#070D0B] hover:bg-white/[0.06] text-slate-300 text-xs font-medium border border-slate-700 transition-all duration-150 active:scale-[0.98] focus:outline-none focus-visible:ring-1 focus-visible:ring-slate-500"
             >
               Cancel
             </button>

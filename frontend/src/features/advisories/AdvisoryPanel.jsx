@@ -272,9 +272,6 @@ export default function AdvisoryPanel({
                 AI Security Advisories
               </h1>
 
-              {/* Exact heading assertion preservation for integration test suite */}
-              <span className="sr-only">Zone 4 — Security Advisory & AI Intelligence</span>
-
               <p className="text-xs text-slate-400 max-w-2xl leading-relaxed">
                 Multilingual defensive security guidance for your PHP environment.
               </p>
@@ -413,7 +410,7 @@ export default function AdvisoryPanel({
             <button
               type="submit"
               disabled={loading || !advisoryText.trim()}
-              className="px-5 py-2.5 rounded-lg bg-[#10B981] hover:bg-[#059669] disabled:bg-slate-800 disabled:text-slate-600 text-xs font-bold text-black transition-all duration-150 shadow-md shadow-emerald-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 flex items-center space-x-1.5"
+              className="px-5 py-2.5 rounded-lg bg-[#10B981] hover:bg-[#059669] disabled:bg-slate-800 disabled:text-slate-600 text-xs font-bold text-black transition-all duration-150 active:scale-[0.98] shadow-md shadow-emerald-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 flex items-center space-x-1.5"
             >
               {loading ? (
                 <>

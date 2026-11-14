@@ -59,17 +59,25 @@ function NavItem({ item, isActive, onClick, isMobile = false }) {
       type="button"
       onClick={onClick}
       aria-current={isActive ? 'page' : undefined}
-      className={`group relative w-full flex items-center justify-between text-left rounded-xl transition-all duration-150 outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${
+      className={`group relative w-full flex items-center justify-between text-left rounded-xl transition-all duration-200 ease-out outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 active:scale-[0.99] ${
         isMobile ? 'px-3 py-2.5 text-sm' : 'px-3.5 py-2 text-[13px]'
       } ${
         isActive
           ? 'bg-[#0B2117] text-white font-semibold border border-emerald-500/70 shadow-[0_0_12px_rgba(16,185,129,0.25)]'
-          : 'text-slate-300 hover:text-white hover:bg-[#071510] border border-transparent font-medium'
+          : 'text-slate-300 hover:text-white hover:bg-[#0B2319] hover:border-emerald-500/35 hover:shadow-[0_0_12px_rgba(16,185,129,0.15)] border border-transparent font-medium'
       }`}
     >
+      {/* Active Indicator Accent Bar */}
+      {isActive && (
+        <span
+          aria-hidden="true"
+          className="absolute left-1 top-1/2 -translate-y-1/2 w-1 h-4 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.8)] motion-reduce:transition-none"
+        />
+      )}
+
       {/* Item Icon and Label */}
-      <div className="flex items-center space-x-2.5 min-w-0">
-        <span className={`shrink-0 ${isActive ? 'text-emerald-400' : 'text-slate-400 group-hover:text-emerald-400 transition-colors'}`}>
+      <div className={`flex items-center space-x-2.5 min-w-0 ${isActive ? 'pl-2' : ''} transition-all duration-150`}>
+        <span className={`shrink-0 transition-colors duration-200 ${isActive ? 'text-emerald-400' : 'text-slate-400 group-hover:text-emerald-300'}`}>
           <IconComponent className="w-4 h-4" />
         </span>
         <span className="truncate tracking-normal">{item.label}</span>
@@ -82,10 +90,10 @@ function NavItem({ item, isActive, onClick, isMobile = false }) {
         </span>
       ) : (
         <span
-          className={`text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 transition-colors duration-150 ${
+          className={`text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 transition-all duration-200 ${
             isActive
               ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-medium'
-              : 'text-slate-400 bg-white/[0.03] border border-white/[0.08] group-hover:text-slate-300'
+              : 'text-slate-400 bg-white/[0.03] border border-white/[0.08] group-hover:text-slate-200 group-hover:border-emerald-500/30'
           }`}
         >
           {item.zone}
@@ -422,7 +430,7 @@ export default function AppShell({ activeTab = 'overview', onTabChange, onAuthCh
             role="dialog"
             aria-modal="true"
             aria-label="Navigation Menu"
-            className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-[#060A08]/95 border-b border-emerald-500/30 backdrop-blur-xl p-4 space-y-2 shadow-2xl rounded-b-xl animate-in slide-in-from-top-2 duration-150 motion-reduce:animate-none motion-reduce:transform-none"
+            className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-[#060A08]/95 border-b border-emerald-500/30 backdrop-blur-xl p-4 space-y-2 shadow-2xl rounded-b-xl animate-drawer-in motion-reduce:animate-none motion-reduce:transform-none"
           >
             <div className="flex items-center justify-between pb-3 mb-2 border-b border-white/[0.08]">
               <div className="flex items-center space-x-2">
