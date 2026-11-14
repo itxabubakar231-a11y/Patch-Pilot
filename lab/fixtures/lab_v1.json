@@ -1,0 +1,178 @@
+{
+  "_notice": "SIMULATED LAB-V1 REPLAY FIXTURES - For local offline replay verification only. No exploit payloads or external requests.",
+  "fixture_version": "lab-v1",
+  "is_simulated": true,
+  "description": "Deterministic HTTP request dataset for testing rule false-positives and attack marker detection.",
+  "benign_requests": [
+    {
+      "id": "benign_01",
+      "category": "benign",
+      "description": "Root homepage request",
+      "method": "GET",
+      "path": "/",
+      "query_params": {},
+      "headers": {
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+      },
+      "body": null,
+      "expected_match": false
+    },
+    {
+      "id": "benign_02",
+      "category": "benign",
+      "description": "Lab health check endpoint",
+      "method": "GET",
+      "path": "/health",
+      "query_params": {},
+      "headers": {
+        "Accept": "application/json",
+        "User-Agent": "PatchPilot-HealthCheck/1.0"
+      },
+      "body": null,
+      "expected_match": false
+    },
+    {
+      "id": "benign_03",
+      "category": "benign",
+      "description": "Alphanumeric search query with multiple parameters",
+      "method": "GET",
+      "path": "/search",
+      "query_params": {
+        "q": "patch",
+        "category": "security",
+        "page": "2"
+      },
+      "headers": {
+        "Accept": "text/html,application/xhtml+xml",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+      },
+      "body": null,
+      "expected_match": false
+    },
+    {
+      "id": "benign_04",
+      "category": "benign",
+      "description": "REST API list with pagination and sorting",
+      "method": "GET",
+      "path": "/items",
+      "query_params": {
+        "limit": "25",
+        "offset": "50",
+        "sort": "desc"
+      },
+      "headers": {
+        "Accept": "application/json",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+      },
+      "body": null,
+      "expected_match": false
+    },
+    {
+      "id": "benign_05",
+      "category": "benign",
+      "description": "Safe form submission POST with JSON body",
+      "method": "POST",
+      "path": "/contact",
+      "query_params": {},
+      "headers": {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+      },
+      "body": {
+        "name": "Admin",
+        "message": "Inquiry about scheduled maintenance"
+      },
+      "expected_match": false
+    },
+    {
+      "id": "benign_06",
+      "category": "benign",
+      "description": "Static asset request with cache-busting query parameter",
+      "method": "GET",
+      "path": "/static/styles.css",
+      "query_params": {
+        "v": "1.0.4"
+      },
+      "headers": {
+        "Accept": "text/css,*/*;q=0.1",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+      },
+      "body": null,
+      "expected_match": false
+    },
+    {
+      "id": "benign_07",
+      "category": "benign",
+      "description": "Near-miss substring edge case (contains 'demo' and 'attack' as non-matching keys/values)",
+      "method": "GET",
+      "path": "/blog",
+      "query_params": {
+        "topic": "defense_against_attacks",
+        "demo": "preview"
+      },
+      "headers": {
+        "Accept": "text/html,application/xhtml+xml",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+      },
+      "body": null,
+      "expected_match": false
+    }
+  ],
+  "attack_requests": [
+    {
+      "id": "marker_01",
+      "category": "attack_marker",
+      "description": "Exact standalone demo attack query marker",
+      "method": "GET",
+      "path": "/",
+      "query_params": {
+        "demo_attack": "true"
+      },
+      "headers": {
+        "Accept": "*/*",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+      },
+      "body": null,
+      "expected_match": true
+    },
+    {
+      "id": "marker_02",
+      "category": "attack_marker",
+      "description": "Demo attack marker combined with normal query parameters",
+      "method": "GET",
+      "path": "/index.php",
+      "query_params": {
+        "page": "home",
+        "demo_attack": "true",
+        "tab": "overview"
+      },
+      "headers": {
+        "Accept": "text/html,application/xhtml+xml",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+      },
+      "body": null,
+      "expected_match": true
+    },
+    {
+      "id": "marker_03",
+      "category": "attack_marker",
+      "description": "POST request with demo attack query marker and legitimate JSON body",
+      "method": "POST",
+      "path": "/api/v1/submit",
+      "query_params": {
+        "demo_attack": "true"
+      },
+      "headers": {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+      },
+      "body": {
+        "action": "test_submission"
+      },
+      "expected_match": true
+    }
+  ]
+}
