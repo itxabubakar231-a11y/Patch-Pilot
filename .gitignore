@@ -62,3 +62,9 @@ credentials.json
 *.swo
 .DS_Store
 Thumbs.db
+
+# SQLite database files
+backend/data/
+*.db
+*.db-wal
+*.db-shm

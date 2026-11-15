@@ -7,12 +7,14 @@ Forwards incoming HTTP requests to the isolated lab upstream on 127.0.0.1:8081.
 Architecture reference: docs/ARCHITECTURE.md (Sections 1, 2, and 5).
 """
 
+import asyncio
 from contextlib import asynccontextmanager
 import logging
 from typing import AsyncGenerator
 from fastapi import FastAPI, Request, Response
 
 from app.core.config import PROXY_HOST, PROXY_PORT
+from app.core.db import init_db
 from app.services.proxy_service import ProxyService
 
 # Configure logging
@@ -27,9 +29,13 @@ proxy_service = ProxyService()
 async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     """
     Manage the lifespan of the Proxy application.
-    Initializes the shared httpx.AsyncClient connection pool on startup
+    Initializes the shared SQLite database schema in a worker thread,
+    starts the shared httpx.AsyncClient connection pool on startup,
     and gracefully closes it on shutdown.
     """
+    logger.info("Initializing database schema on proxy startup...")
+    await asyncio.to_thread(init_db)
+
     logger.info("Starting PatchPilot Security Proxy on http://%s:%s", PROXY_HOST, PROXY_PORT)
     await proxy_service.start()
     try:
