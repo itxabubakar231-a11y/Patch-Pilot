@@ -269,16 +269,16 @@ export default function TrafficMonitor() {
   const isFiltered = actionFilter !== 'all' || methodFilter !== 'all' || searchQuery.trim() !== ''
 
   return (
-    <div className="space-y-6">
-      {/* 1. Zone Header & Live Telemetry Controls (Stage 1 Parity) */}
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-emerald-500/20">
+    <div className="px-4 sm:px-6 lg:px-8 py-5 sm:py-6 space-y-4 max-w-7xl">
+      {/* 1. Zone Header & Live Telemetry Controls */}
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-emerald-500/15">
         <div className="space-y-1">
-          <div className="flex flex-wrap items-center gap-2.5">
-            <span className="text-emerald-400 font-mono font-bold text-xs tracking-wider uppercase">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-emerald-400 font-mono font-semibold text-[11px] tracking-widest uppercase">
               ZONE 2
             </span>
             <span className="text-slate-600 text-xs">•</span>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold">
               Port 8080 Log
             </span>
             <span
@@ -298,11 +298,11 @@ export default function TrafficMonitor() {
             </span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight leading-tight">
+          <h1 className="text-xl sm:text-2xl lg:text-[26px] font-display font-bold text-white tracking-tight leading-tight">
             Traffic Monitor
           </h1>
 
-          <p className="text-xs text-slate-400 max-w-2xl leading-relaxed">
+          <p className="text-xs text-slate-400 max-w-2xl leading-relaxed font-sans">
             Redacted request history from reverse proxy on port 8080. Query parameters, request bodies, and client IPs are strictly omitted.
           </p>
         </div>
@@ -322,7 +322,7 @@ export default function TrafficMonitor() {
             disabled={isRefreshing}
             aria-busy={isRefreshing}
             aria-label="Refresh traffic log"
-            className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-lg bg-[#0C1A14] hover:bg-[#12261F] text-slate-200 border border-emerald-500/25 text-xs font-semibold transition-all duration-150 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 disabled:opacity-50 shadow-sm"
+            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-[#0C1A14] hover:bg-[#12261F] text-slate-200 border border-emerald-500/25 text-xs font-sans font-medium transition-all duration-150 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 disabled:opacity-50 shadow-sm"
           >
             <IconRefresh className={`w-3.5 h-3.5 text-emerald-400 ${isRefreshing ? 'animate-spin' : ''}`} />
             <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
@@ -335,13 +335,13 @@ export default function TrafficMonitor() {
         <div
           role="note"
           aria-label="Demo traffic disclosure"
-          className="rounded-xl border border-emerald-500/30 bg-[#0C1615]/90 p-3.5 text-xs flex flex-wrap items-center justify-between gap-2.5 text-emerald-200 shadow-sm backdrop-blur-md"
+          className="rounded-lg border border-emerald-500/30 bg-[#0C1615]/90 px-3.5 py-2 text-xs flex flex-wrap items-center justify-between gap-2 text-emerald-200 shadow-sm backdrop-blur-md font-sans"
         >
-          <div className="flex items-center space-x-2.5">
+          <div className="flex items-center space-x-2">
             <IconInfo className="w-4 h-4 text-emerald-400 shrink-0" />
             <div>
-              <span className="font-bold text-emerald-300">SIMULATED TRAFFIC / DEMO DATA:</span>{' '}
-              <span className="text-slate-300">
+              <span className="font-semibold text-emerald-300 font-mono text-[11px] uppercase">SIMULATED TRAFFIC:</span>{' '}
+              <span className="text-slate-300 text-xs">
                 Displaying deterministic benchmark traffic records for defensive evaluation. No live HTTP traffic has been intercepted in this mode.
               </span>
             </div>
@@ -354,13 +354,13 @@ export default function TrafficMonitor() {
         <div
           role="note"
           aria-label="Live backend mode active"
-          className="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-3.5 text-xs flex flex-wrap items-center justify-between gap-2.5 text-emerald-200 shadow-sm backdrop-blur-md"
+          className="rounded-lg border border-emerald-500/30 bg-emerald-950/20 px-3.5 py-2 text-xs flex flex-wrap items-center justify-between gap-2 text-emerald-200 shadow-sm backdrop-blur-md font-sans"
         >
-          <div className="flex items-center space-x-2.5">
+          <div className="flex items-center space-x-2">
             <IconShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
             <div>
-              <span className="font-bold text-emerald-300">LIVE TRAFFIC FEED CONNECTED:</span>{' '}
-              <span className="text-slate-300">
+              <span className="font-semibold text-emerald-300 font-mono text-[11px] uppercase">LIVE TRAFFIC FEED:</span>{' '}
+              <span className="text-slate-300 text-xs">
                 Streaming inspected transaction records from SQLite database via FastAPI management service (<code className="text-white font-mono">127.0.0.1:8000</code>).
               </span>
             </div>
@@ -373,13 +373,13 @@ export default function TrafficMonitor() {
         <div
           role="note"
           aria-label="Real mode unverified"
-          className="rounded-xl border border-amber-500/30 bg-amber-950/20 p-3.5 text-xs flex flex-wrap items-center justify-between gap-2.5 text-amber-200 shadow-sm backdrop-blur-md"
+          className="rounded-lg border border-amber-500/30 bg-amber-950/20 px-3.5 py-2 text-xs flex flex-wrap items-center justify-between gap-2 text-amber-200 shadow-sm backdrop-blur-md font-sans"
         >
-          <div className="flex items-center space-x-2.5">
+          <div className="flex items-center space-x-2">
             <IconHourglass className="w-4 h-4 text-amber-400 shrink-0" />
             <div>
-              <span className="font-bold text-amber-300">REAL MODE CONFIGURED (CONNECTION UNVERIFIED):</span>{' '}
-              <span className="text-slate-300">
+              <span className="font-semibold text-amber-300 font-mono text-[11px] uppercase">REAL MODE (UNVERIFIED):</span>{' '}
+              <span className="text-slate-300 text-xs">
                 Configured for live API, but an authenticated response from <code className="text-white font-mono">http://127.0.0.1:8000</code> has not been established yet.
               </span>
             </div>
@@ -393,24 +393,24 @@ export default function TrafficMonitor() {
       {/* 3. Four Traffic Summary Metric Cards (Stage 1 Geometry: 140px high, Dark-Green Contrast) */}
       <section
         aria-label="Traffic summary indicators"
-        className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4"
+        className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4"
       >
         {/* Card 1: Total Requests (Server Total) */}
         <div className="rounded-xl border border-emerald-500/20 bg-[#0C1615]/90 p-4 flex flex-col justify-between h-[140px] shadow-sm backdrop-blur-md hover:-translate-y-0.5 hover:border-emerald-400/50 hover:shadow-[0_4px_24px_rgba(16,185,129,0.22)] transition-all duration-200 ease-out motion-reduce:hover:translate-y-0 motion-reduce:transition-none">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <IconLayers className="w-4 h-4 text-emerald-400" />
-              <span className="text-slate-300 text-xs font-medium">Total Requests</span>
+              <span className="text-slate-400 text-xs font-mono font-medium tracking-wider uppercase">Total Requests</span>
             </div>
-            <span className="text-emerald-400 border border-emerald-500/40 bg-emerald-500/10 text-[10px] font-mono font-bold px-2 py-0.5 rounded">
+            <span className="text-emerald-400 border border-emerald-500/40 bg-emerald-500/10 text-[10px] font-mono font-bold px-2 py-0.5 rounded uppercase tracking-wider">
               Server Total
             </span>
           </div>
-          <div className="text-[24px] font-bold text-white tracking-tight flex items-baseline space-x-1.5 font-mono">
+          <div className="text-[22px] sm:text-[24px] font-display font-bold text-white tracking-tight flex items-baseline space-x-1.5">
             <span>{loading && !trafficData.items.length ? '—' : summaryCounts.total}</span>
             <span className="text-slate-400 text-xs font-normal font-sans">events</span>
           </div>
-          <div className="text-slate-400 text-xs leading-snug">
+          <div className="text-slate-400 text-[11px] font-sans leading-snug">
             {isMockMode
               ? `Server audit log (${summaryCounts.total} total recorded)`
               : `Server-wide proxy ingress audit (${summaryCounts.total} total)`}
@@ -422,17 +422,17 @@ export default function TrafficMonitor() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <IconCheckCircle className="w-4 h-4 text-emerald-400" />
-              <span className="text-slate-300 text-xs font-medium">Allowed Requests</span>
+              <span className="text-slate-400 text-xs font-mono font-medium tracking-wider uppercase">Allowed Requests</span>
             </div>
-            <span className="text-emerald-400 border border-emerald-500/40 bg-emerald-500/10 text-[10px] font-mono font-bold px-2 py-0.5 rounded uppercase">
+            <span className="text-emerald-400 border border-emerald-500/40 bg-emerald-500/10 text-[10px] font-mono font-bold px-2 py-0.5 rounded uppercase tracking-wider">
               Loaded Window
             </span>
           </div>
-          <div className="text-[24px] font-bold text-white tracking-tight flex items-baseline space-x-1.5 font-mono">
+          <div className="text-[22px] sm:text-[24px] font-display font-bold text-white tracking-tight flex items-baseline space-x-1.5">
             <span>{loading && !trafficData.items.length ? '—' : summaryCounts.allowed}</span>
             <span className="text-slate-400 text-xs font-normal font-sans">forwarded</span>
           </div>
-          <div className="text-slate-400 text-xs leading-snug">
+          <div className="text-slate-400 text-[11px] font-sans leading-snug">
             Forwarded (from {summaryCounts.loadedCount} loaded events)
           </div>
         </div>
@@ -442,17 +442,17 @@ export default function TrafficMonitor() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <IconEye className="w-4 h-4 text-amber-400" />
-              <span className="text-slate-300 text-xs font-medium">Shadow Matches</span>
+              <span className="text-slate-400 text-xs font-mono font-medium tracking-wider uppercase">Shadow Matches</span>
             </div>
-            <span className="text-amber-400 border border-amber-500/40 bg-amber-500/10 text-[10px] font-mono font-bold px-2 py-0.5 rounded uppercase">
+            <span className="text-amber-400 border border-amber-500/40 bg-amber-500/10 text-[10px] font-mono font-bold px-2 py-0.5 rounded uppercase tracking-wider">
               Loaded Window
             </span>
           </div>
-          <div className="text-[24px] font-bold text-white tracking-tight flex items-baseline space-x-1.5 font-mono">
+          <div className="text-[22px] sm:text-[24px] font-display font-bold text-white tracking-tight flex items-baseline space-x-1.5">
             <span>{loading && !trafficData.items.length ? '—' : summaryCounts.shadow}</span>
             <span className="text-slate-400 text-xs font-normal font-sans">matches</span>
           </div>
-          <div className="text-slate-400 text-xs leading-snug">
+          <div className="text-slate-400 text-[11px] font-sans leading-snug">
             Observed query markers (from {summaryCounts.loadedCount} loaded events)
           </div>
         </div>
@@ -462,17 +462,17 @@ export default function TrafficMonitor() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <IconShieldBan className="w-4 h-4 text-rose-400" />
-              <span className="text-slate-300 text-xs font-medium">Blocked Requests</span>
+              <span className="text-slate-400 text-xs font-mono font-medium tracking-wider uppercase">Blocked Requests</span>
             </div>
-            <span className="text-rose-400 border border-rose-500/40 bg-rose-500/10 text-[10px] font-mono font-bold px-2 py-0.5 rounded uppercase">
+            <span className="text-rose-400 border border-rose-500/40 bg-rose-500/10 text-[10px] font-mono font-bold px-2 py-0.5 rounded uppercase tracking-wider">
               Loaded Window
             </span>
           </div>
-          <div className="text-[24px] font-bold text-white tracking-tight flex items-baseline space-x-1.5 font-mono">
+          <div className="text-[22px] sm:text-[24px] font-display font-bold text-white tracking-tight flex items-baseline space-x-1.5">
             <span>{loading && !trafficData.items.length ? '—' : summaryCounts.blocked}</span>
             <span className="text-slate-400 text-xs font-normal font-sans">intercepts</span>
           </div>
-          <div className="text-slate-400 text-xs leading-snug">
+          <div className="text-slate-400 text-[11px] font-sans leading-snug">
             HTTP 403 intercepts (from {summaryCounts.loadedCount} loaded events)
           </div>
         </div>
@@ -545,14 +545,14 @@ export default function TrafficMonitor() {
           <div className="flex flex-wrap items-center gap-2.5">
             {/* Action Filter */}
             <div className="flex items-center space-x-1.5">
-              <label htmlFor="action-filter-select" className="text-slate-400 font-semibold uppercase text-[10px]">
+              <label htmlFor="action-filter-select" className="text-slate-400 font-mono font-semibold uppercase text-[10px] tracking-wider">
                 Action:
               </label>
               <select
                 id="action-filter-select"
                 value={actionFilter}
                 onChange={(e) => setActionFilter(e.target.value)}
-                className="bg-[#070D0B] border border-emerald-500/20 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-400 font-medium cursor-pointer transition-colors duration-150"
+                className="bg-[#070D0B] border border-emerald-500/20 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-400 font-sans cursor-pointer transition-colors duration-150"
               >
                 <option value="all">All Actions</option>
                 <option value="allowed">Allowed</option>
@@ -564,14 +564,14 @@ export default function TrafficMonitor() {
 
             {/* HTTP Method Filter */}
             <div className="flex items-center space-x-1.5">
-              <label htmlFor="method-filter-select" className="text-slate-400 font-semibold uppercase text-[10px]">
+              <label htmlFor="method-filter-select" className="text-slate-400 font-mono font-semibold uppercase text-[10px] tracking-wider">
                 Method:
               </label>
               <select
                 id="method-filter-select"
                 value={methodFilter}
                 onChange={(e) => setMethodFilter(e.target.value)}
-                className="bg-[#070D0B] border border-emerald-500/20 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-400 font-medium cursor-pointer transition-colors duration-150"
+                className="bg-[#070D0B] border border-emerald-500/20 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-400 font-sans cursor-pointer transition-colors duration-150"
               >
                 <option value="all">All Methods</option>
                 <option value="GET">GET</option>

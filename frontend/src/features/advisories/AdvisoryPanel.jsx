@@ -240,7 +240,7 @@ export default function AdvisoryPanel({
       : 'bg-slate-800 text-slate-300 border-slate-700'
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-5">
       {/* 1. Zone Header with Futuristic AI Orb & Language Tabs (Stage 1 / 2 / 3 Parity) */}
       <div className="rounded-xl border border-emerald-500/20 bg-[#0C1615]/90 p-5 shadow-sm backdrop-blur-md">
         <div className="flex flex-wrap items-center justify-between gap-6">
@@ -250,11 +250,11 @@ export default function AdvisoryPanel({
 
             <div className="space-y-1">
               <div className="flex flex-wrap items-center gap-2.5">
-                <span className="text-emerald-400 font-mono font-bold text-xs tracking-wider uppercase">
+                <span className="text-emerald-400 font-mono font-semibold text-[11px] tracking-widest uppercase">
                   ZONE 4
                 </span>
                 <span className="text-slate-600 text-xs">•</span>
-                <span className="text-[10px] font-mono px-2.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold">
+                <span className="text-[10px] font-mono px-2.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold uppercase tracking-wider">
                   {isActualLlm ? 'AI ANALYZED (GROQ)' : 'SIMULATED DEMO'}
                 </span>
                 <span
@@ -268,17 +268,17 @@ export default function AdvisoryPanel({
                 </span>
               </div>
 
-              <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight leading-tight">
+              <h1 className="text-xl sm:text-2xl lg:text-[26px] font-display font-bold text-white tracking-tight leading-tight">
                 AI Security Advisories
               </h1>
 
-              <p className="text-xs text-slate-400 max-w-2xl leading-relaxed">
+              <p className="text-slate-400 text-[13px] sm:text-sm font-sans leading-relaxed max-w-2xl">
                 Multilingual defensive security guidance for your PHP environment.
               </p>
 
               {/* AI Agent Status Pill */}
               <div className="flex items-center space-x-2 pt-1.5">
-                <span className="text-[11px] font-mono text-slate-400">AI Agent:</span>
+                <span className="text-[11px] font-mono font-medium text-slate-400">AI Agent:</span>
                 <span
                   className={`text-[10px] font-mono uppercase font-bold px-2.5 py-0.5 rounded border transition-colors ${
                     orbState === 'analyzing'
@@ -490,17 +490,17 @@ export default function AdvisoryPanel({
               dir={currentLangMeta.dir}
               className={`space-y-3 pt-1 ${currentLangMeta.dir === 'rtl' ? 'text-right' : 'text-left'}`}
             >
-              <h3 className="text-xl font-bold text-white tracking-tight leading-snug">
+              <h3 className="text-lg sm:text-xl font-display font-bold text-white tracking-tight leading-snug">
                 {renderLocalizedContent(activeLocalization.title)}
               </h3>
-              <p className="text-xs text-slate-300 leading-relaxed font-sans">
+              <p className="text-xs sm:text-[13px] text-slate-300 leading-relaxed font-sans">
                 {renderLocalizedContent(activeLocalization.summary)}
               </p>
               <div className="mt-4 p-4 rounded-xl bg-[#08120E] border border-emerald-500/25 shadow-sm space-y-1.5">
                 <span className="block text-[11px] font-semibold text-emerald-400 uppercase tracking-wider font-mono">
                   Recommended Action:
                 </span>
-                <p className="text-xs text-slate-200 leading-relaxed font-sans">
+                <p className="text-xs sm:text-[13px] text-slate-200 leading-relaxed font-sans">
                   {renderLocalizedContent(activeLocalization.recommended_action)}
                 </p>
               </div>

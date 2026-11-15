@@ -268,7 +268,7 @@ export default function SecurityOverview({ onNavigate }) {
     : `Reverse proxy (${proxyMode} mode)`
 
   return (
-    <div className="px-8 pt-10 pb-6 relative overflow-hidden">
+    <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 relative overflow-hidden max-w-7xl">
       {/* Decorative Emerald Aurora (Clearly defined sweeping diagonal curved emerald light behind hero) */}
       <div
         aria-hidden="true"
@@ -336,35 +336,35 @@ export default function SecurityOverview({ onNavigate }) {
         </svg>
       </div>
 
-      {/* 1. Main Hero Section (Starts around y=112px, buttons around y=252px, Orb center near x=1230, y=220) */}
-      <section aria-label="Security Overview Hero" className="mb-12 flex flex-wrap xl:flex-nowrap items-center justify-between gap-6 min-h-[160px] relative">
+      {/* 1. Main Hero Section */}
+      <section aria-label="Security Overview Hero" className="mb-4 sm:mb-5 flex flex-wrap xl:flex-nowrap items-center justify-between gap-5 min-h-[120px] relative">
         {/* Left: Titles & Honest Action Controls */}
-        <div className="space-y-2.5 max-w-2xl">
+        <div className="space-y-1.5 max-w-2xl">
           <div>
-            <span className="text-emerald-400 font-mono font-bold text-xs tracking-wider uppercase">
+            <span className="text-emerald-400 font-mono font-semibold text-[11px] tracking-widest uppercase">
               ZONE 1
             </span>
-            <h1 className="text-3xl sm:text-[34px] font-bold text-white tracking-tight leading-tight mt-0.5">
+            <h1 className="text-2xl sm:text-[25px] font-display font-bold text-white tracking-tight leading-tight mt-0.5">
               Security Overview
             </h1>
           </div>
 
-          <p className="text-slate-300 text-sm leading-relaxed max-w-xl">
+          <p className="text-slate-400 text-[13px] font-sans leading-relaxed max-w-xl">
             {isMockMode
               ? 'Defensive telemetry for a self-hosted PHP stack using a reverse-proxy shield, with deterministic benchmarks and simulated attack traffic in a local lab.'
               : 'Defensive telemetry for a self-hosted PHP stack using a reverse-proxy shield, with local loopback telemetry and administrative control on 127.0.0.1:8000.'}
           </p>
 
-          {/* Action Buttons: Honest Labels matching real functionality */}
-          <div className="flex flex-wrap items-center gap-3 pt-2">
+          {/* Action Buttons: Clean typography and subtle hover states */}
+          <div className="flex flex-wrap items-center gap-2 pt-1">
             <button
               type="button"
               onClick={() => fetchOverview(true)}
               disabled={isRefreshing}
-              className="bg-[#10B981] hover:bg-[#059669] text-black font-semibold px-5 py-2.5 rounded-lg text-sm flex items-center space-x-2 shadow-[0_0_20px_rgba(16,185,129,0.25)] transition-all duration-150 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 disabled:opacity-60"
+              className="bg-[#10B981] hover:bg-[#059669] text-black font-semibold px-3.5 py-1.5 rounded-lg text-xs font-sans tracking-wide flex items-center space-x-2 shadow-[0_0_20px_rgba(16,185,129,0.25)] transition-all duration-150 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 disabled:opacity-60"
               title="Refresh real-time security posture and proxy telemetry"
             >
-              <IconRefresh className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <IconRefresh className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
               <span>{isRefreshing ? 'Refreshing...' : 'Refresh Overview'}</span>
             </button>
 
@@ -373,28 +373,28 @@ export default function SecurityOverview({ onNavigate }) {
               onClick={() => {
                 if (onNavigate) onNavigate('advisories')
               }}
-              className="bg-[#0C1A14] hover:bg-[#12261F] text-slate-200 border border-emerald-500/25 px-4 py-2.5 rounded-lg text-sm font-medium flex items-center space-x-2 transition-all duration-150 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+              className="bg-[#0C1A14] hover:bg-[#12261F] text-slate-200 border border-emerald-500/25 px-3 py-1.5 rounded-lg text-xs font-sans font-medium tracking-wide flex items-center space-x-2 transition-all duration-150 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
               title="Open Zone 4 Security Advisory and Threat Intelligence reports"
             >
-              <IconDocument className="w-4 h-4 text-slate-300" />
+              <IconDocument className="w-3.5 h-3.5 text-slate-300" />
               <span>Open AI Advisories</span>
             </button>
           </div>
         </div>
 
-        {/* Right: Authentic 3D AI Orb and Status Card (Aligned to x ≈ 1230 center, y ≈ 220 center) */}
-        <div className="flex items-center space-x-5 shrink-0 xl:mr-[124px] mt-7">
+        {/* Right: Authentic 3D AI Orb and Status Card */}
+        <div className="flex items-center space-x-4 shrink-0 xl:mr-16 mt-3 xl:mt-0">
           <OverviewOrbPreview />
 
-          <div className="space-y-1">
-            <div className="text-white font-bold text-base leading-tight">
+          <div className="space-y-0.5">
+            <div className="text-white font-display font-semibold text-[15px] leading-tight">
               AI Defense Engine
             </div>
-            <div className="text-slate-400 text-xs font-mono">
+            <div className="text-slate-400 text-[11px] font-mono">
               {isMockMode ? 'Standby (Zone 4) • Mock Fixture' : 'Standby (Zone 4) • Engine Standby'}
             </div>
-            {/* Neutral Standby Status Badge (No false claims of readiness) */}
-            <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.1] text-slate-300 text-xs font-medium mt-1">
+            {/* Neutral Standby Status Badge */}
+            <div className="inline-flex items-center space-x-1.5 px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.1] text-slate-300 text-[11px] font-mono font-medium mt-1">
               <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
               <span>Standby</span>
             </div>
@@ -407,7 +407,7 @@ export default function SecurityOverview({ onNavigate }) {
         <div
           role="alert"
           aria-live="polite"
-          className="mb-6 p-3 rounded-xl text-xs flex items-center justify-between gap-3 bg-rose-500/10 text-rose-300 border border-rose-500/30 backdrop-blur-sm"
+          className="mb-4 p-3 rounded-xl text-xs flex items-center justify-between gap-3 bg-rose-500/10 text-rose-300 border border-rose-500/30 backdrop-blur-sm"
         >
           <div className="flex items-center space-x-2">
             <IconAlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
@@ -437,48 +437,48 @@ export default function SecurityOverview({ onNavigate }) {
         </div>
       )}
 
-      {/* 2. Four Metric Cards: Exact y=344–484px, Height=140px, Dark-Green Contrast */}
+      {/* 2. Four Metric Cards */}
       <section
         aria-label="Key security indicators"
-        className="mb-7 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4"
+        className="mb-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"
       >
         {/* Card 1: Proxy Mode (Without hardcoded fallback) */}
-        <div className="rounded-xl border border-emerald-500/20 bg-[#0C1615]/90 p-4 flex flex-col justify-between h-[140px] shadow-sm backdrop-blur-md hover:-translate-y-0.5 hover:border-emerald-400/50 hover:shadow-[0_4px_24px_rgba(16,185,129,0.22)] transition-all duration-200 ease-out motion-reduce:hover:translate-y-0 motion-reduce:transition-none">
+        <div className="rounded-xl border border-emerald-500/20 bg-[#0C1615]/90 p-3.5 flex flex-col justify-between min-h-[112px] shadow-sm backdrop-blur-md hover:-translate-y-0.5 hover:border-emerald-400/50 hover:shadow-[0_4px_20px_rgba(16,185,129,0.18)] transition-all duration-200 ease-out motion-reduce:hover:translate-y-0 motion-reduce:transition-none">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <IconShield className="w-4 h-4 text-emerald-400" />
-              <span className="text-slate-300 text-xs font-medium">Proxy Mode</span>
+            <div className="flex items-center space-x-1.5">
+              <IconShield className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="text-slate-400 text-xs font-mono font-medium tracking-wider uppercase">Proxy Mode</span>
             </div>
-            <span className="text-emerald-400 border border-emerald-500/40 bg-emerald-500/10 text-[10px] font-mono font-bold px-2 py-0.5 rounded uppercase">
+            <span className="text-emerald-400 border border-emerald-500/40 bg-emerald-500/10 text-[10px] font-mono font-semibold px-2 py-0.5 rounded uppercase">
               {proxyCardBadge}
             </span>
           </div>
-          <div className="text-[24px] font-bold text-white tracking-tight whitespace-nowrap">
+          <div className="text-[20px] sm:text-[22px] font-display font-bold text-white tracking-tight leading-snug whitespace-nowrap">
             {proxyCardTitle}
           </div>
-          <div className="text-slate-400 text-xs leading-snug">
+          <div className="text-slate-400 text-xs leading-tight font-sans mt-0.5">
             {proxyCardDesc}
           </div>
         </div>
 
         {/* Card 2: Traffic (Preserves legitimate 0 values) */}
-        <div className="rounded-xl border border-emerald-500/20 bg-[#0C1615]/90 p-4 flex flex-col justify-between h-[140px] shadow-sm backdrop-blur-md hover:-translate-y-0.5 hover:border-emerald-400/50 hover:shadow-[0_4px_24px_rgba(16,185,129,0.22)] transition-all duration-200 ease-out motion-reduce:hover:translate-y-0 motion-reduce:transition-none">
+        <div className="rounded-xl border border-emerald-500/20 bg-[#0C1615]/90 p-3.5 flex flex-col justify-between min-h-[112px] shadow-sm backdrop-blur-md hover:-translate-y-0.5 hover:border-emerald-400/50 hover:shadow-[0_4px_20px_rgba(16,185,129,0.18)] transition-all duration-200 ease-out motion-reduce:hover:translate-y-0 motion-reduce:transition-none">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <IconLayers className="w-4 h-4 text-emerald-400" />
-              <span className="text-slate-300 text-xs font-medium">Traffic</span>
+            <div className="flex items-center space-x-1.5">
+              <IconLayers className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="text-slate-400 text-xs font-mono font-medium tracking-wider uppercase">Traffic</span>
             </div>
-            <span className="text-emerald-400 border border-emerald-500/40 bg-emerald-500/10 text-[10px] font-mono font-bold px-2 py-0.5 rounded">
+            <span className="text-emerald-400 border border-emerald-500/40 bg-emerald-500/10 text-[10px] font-mono font-semibold px-2 py-0.5 rounded">
               Port 8080
             </span>
           </div>
-          <div className="text-[24px] font-bold text-white tracking-tight flex items-baseline space-x-1.5 font-mono">
+          <div className="text-[20px] sm:text-[22px] font-display font-bold text-white tracking-tight leading-snug flex items-baseline space-x-1.5 font-mono">
             <span>{totalRequests !== null ? formatCount(totalRequests) : '—'}</span>
             <span className="text-slate-400 text-xs font-normal font-sans">
               {totalRequests !== null ? 'requests' : ''}
             </span>
           </div>
-          <div className="text-slate-400 text-xs leading-snug">
+          <div className="text-slate-400 text-xs leading-tight font-sans mt-0.5">
             {totalRequests !== null
               ? (isMockMode ? 'Deterministic benchmark dataset' : 'Live proxy ingress telemetry')
               : 'Traffic telemetry unavailable'}
@@ -486,13 +486,13 @@ export default function SecurityOverview({ onNavigate }) {
         </div>
 
         {/* Card 3: Upstream Stack (Strictly source-backed, zero fabricated fallback) */}
-        <div className="rounded-xl border border-emerald-500/20 bg-[#0C1615]/90 p-4 flex flex-col justify-between h-[140px] shadow-sm backdrop-blur-md hover:-translate-y-0.5 hover:border-emerald-400/50 hover:shadow-[0_4px_24px_rgba(16,185,129,0.22)] transition-all duration-200 ease-out motion-reduce:hover:translate-y-0 motion-reduce:transition-none">
+        <div className="rounded-xl border border-emerald-500/20 bg-[#0C1615]/90 p-3.5 flex flex-col justify-between min-h-[112px] shadow-sm backdrop-blur-md hover:-translate-y-0.5 hover:border-emerald-400/50 hover:shadow-[0_4px_20px_rgba(16,185,129,0.18)] transition-all duration-200 ease-out motion-reduce:hover:translate-y-0 motion-reduce:transition-none">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <IconServer className="w-4 h-4 text-emerald-400" />
-              <span className="text-slate-300 text-xs font-medium">Upstream Stack</span>
+            <div className="flex items-center space-x-1.5">
+              <IconServer className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="text-slate-400 text-xs font-mono font-medium tracking-wider uppercase">Upstream Stack</span>
             </div>
-            <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded ${
+            <span className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded ${
               sourceStack || upstreamTarget
                 ? 'text-cyan-400 border border-cyan-500/40 bg-cyan-500/10'
                 : 'text-slate-400 border border-slate-500/30 bg-white/[0.03]'
@@ -500,43 +500,43 @@ export default function SecurityOverview({ onNavigate }) {
               {stackCardBadge}
             </span>
           </div>
-          <div className="text-[24px] font-bold text-white tracking-tight whitespace-nowrap">
+          <div className="text-[20px] sm:text-[22px] font-display font-bold text-white tracking-tight leading-snug whitespace-nowrap">
             {stackCardTitle}
           </div>
-          <div className="text-slate-300 text-xs leading-snug font-mono truncate">
+          <div className="text-slate-400 text-xs leading-tight font-mono mt-0.5 break-words">
             {stackCardDesc}
           </div>
         </div>
 
         {/* Card 4: AI Intelligence (Truthful Zone 4 advisory state, decoupled from proxy markers) */}
-        <div className="rounded-xl border border-emerald-500/20 bg-[#0C1615]/90 p-4 flex flex-col justify-between h-[140px] shadow-sm backdrop-blur-md hover:-translate-y-0.5 hover:border-emerald-400/50 hover:shadow-[0_4px_24px_rgba(16,185,129,0.22)] transition-all duration-200 ease-out motion-reduce:hover:translate-y-0 motion-reduce:transition-none">
+        <div className="rounded-xl border border-emerald-500/20 bg-[#0C1615]/90 p-3.5 flex flex-col justify-between min-h-[112px] shadow-sm backdrop-blur-md hover:-translate-y-0.5 hover:border-emerald-400/50 hover:shadow-[0_4px_20px_rgba(16,185,129,0.18)] transition-all duration-200 ease-out motion-reduce:hover:translate-y-0 motion-reduce:transition-none">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <IconCpu className="w-4 h-4 text-emerald-400" />
-              <span className="text-slate-300 text-xs font-medium">AI Intelligence</span>
+            <div className="flex items-center space-x-1.5">
+              <IconCpu className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="text-slate-400 text-xs font-mono font-medium tracking-wider uppercase">AI Intelligence</span>
             </div>
-            <span className="text-emerald-400 border border-emerald-500/40 bg-emerald-500/10 text-[10px] font-mono font-bold px-2 py-0.5 rounded">
+            <span className="text-emerald-400 border border-emerald-500/40 bg-emerald-500/10 text-[10px] font-mono font-semibold px-2 py-0.5 rounded">
               {isMockMode ? 'Fixture' : 'Zone 4'}
             </span>
           </div>
-          <div className="text-[24px] font-bold text-white tracking-tight flex items-baseline space-x-1.5 font-mono">
+          <div className="text-[20px] sm:text-[22px] font-display font-bold text-white tracking-tight leading-snug flex items-baseline space-x-1.5 font-mono">
             <span>{advisoryCount !== null ? formatCount(advisoryCount) : 'Standby'}</span>
             <span className="text-slate-400 text-xs font-normal font-sans">
               {advisoryCount !== null ? (advisoryCount === 1 ? 'advisory' : 'advisories') : ''}
             </span>
           </div>
-          <div className="text-slate-300 text-xs leading-snug">
+          <div className="text-slate-400 text-xs leading-tight font-sans mt-0.5">
             {advisoryCount !== null
-              ? (isMockMode ? 'Deterministic security advisories (Zone 4 fixture)' : 'Zone 4 security advisory count')
+              ? (isMockMode ? 'Deterministic advisories (Zone 4)' : 'Zone 4 security advisory count')
               : 'AI advisory engine standby in Zone 4'}
           </div>
         </div>
       </section>
 
-      {/* 3. Lab Topology & Architecture: Exact y=512–885px, Height=373px */}
+      {/* 3. Lab Topology & Architecture */}
       <section
         aria-label="Lab Topology and Architecture"
-        className="rounded-2xl border border-emerald-500/20 bg-[#0D1B1C]/95 p-6 shadow-lg backdrop-blur-md flex flex-col justify-between min-h-[373px]"
+        className="rounded-2xl border border-emerald-500/20 bg-[#0D1B1C]/95 p-4 sm:p-5 shadow-lg backdrop-blur-md flex flex-col justify-between"
       >
         {/* Topology Header */}
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -545,10 +545,10 @@ export default function SecurityOverview({ onNavigate }) {
               <IconTopology className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-white tracking-tight">
+              <h2 className="text-sm sm:text-base font-display font-semibold text-white tracking-tight">
                 Lab Topology & Architecture
               </h2>
-              <p className="text-xs text-slate-300 mt-0.5">
+              <p className="text-xs text-slate-400 mt-0.5 font-sans">
                 {isMockMode
                   ? 'Request flow and control plane for Zone 1 (simulated lab).'
                   : 'Request flow and control plane for Zone 1 (local loopback architecture).'}
@@ -557,7 +557,7 @@ export default function SecurityOverview({ onNavigate }) {
           </div>
 
           <div className="flex items-center space-x-2">
-            <span className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-medium">
+            <span className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-medium">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
               <span>{labStatusLabel}</span>
             </span>
@@ -570,47 +570,47 @@ export default function SecurityOverview({ onNavigate }) {
         {/* Main Forwarding Pipeline: Three Wide Horizontal Nodes */}
         <div className="flex flex-wrap lg:flex-nowrap items-center justify-between gap-3 pt-3">
           {/* Node 1: Client / Browser (Cyan Outline) */}
-          <div className="flex-1 min-w-[240px] rounded-xl border border-cyan-500/35 bg-[#09151C]/90 p-4 flex items-center space-x-3.5 shadow-sm min-h-[86px] transition-all duration-200 hover:border-cyan-400/60 hover:shadow-[0_0_15px_rgba(6,182,212,0.15)] motion-reduce:transition-none">
-            <div className="w-10 h-10 rounded-lg bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0">
+          <div className="flex-1 min-w-[240px] rounded-xl border border-cyan-500/35 bg-[#09151C]/90 p-3.5 flex items-center space-x-3.5 shadow-sm min-h-[80px] transition-all duration-200 hover:border-cyan-400/60 hover:shadow-[0_0_15px_rgba(6,182,212,0.15)] motion-reduce:transition-none">
+            <div className="w-9 h-9 rounded-lg bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0">
               <IconMonitor className="w-5 h-5" />
             </div>
             <div className="min-w-0">
-              <div className="text-[15px] font-bold text-white truncate">Client / Browser</div>
-              <div className="text-xs text-slate-300 truncate mt-1">
+              <div className="text-[14px] sm:text-[15px] font-display font-semibold text-white">Client / Browser</div>
+              <div className="text-xs text-slate-400 mt-0.5 font-sans leading-snug">
                 {isMockMode ? 'Simulated traffic (benchmarks)' : 'Loopback client traffic'}
               </div>
             </div>
           </div>
 
           {/* Prominent Forwarding Directional Arrow 1 */}
-          <span className="hidden lg:flex text-emerald-400 font-extrabold text-3xl px-3 select-none leading-none drop-shadow-[0_0_12px_rgba(16,185,129,0.9)]">
+          <span className="hidden lg:flex text-emerald-400 font-extrabold text-2xl lg:text-3xl px-3 select-none leading-none drop-shadow-[0_0_12px_rgba(16,185,129,0.9)]">
             →
           </span>
 
           {/* Node 2: PatchPilot Proxy Shield (Centerpiece Glowing Hero Node) */}
-          <div className="flex-1 min-w-[270px] rounded-xl border-2 border-emerald-400 bg-[#042416] p-4 flex items-center space-x-3.5 shadow-[0_0_24px_rgba(16,185,129,0.35)] ring-1 ring-emerald-400/50 min-h-[96px] transition-all duration-200 hover:shadow-[0_0_32px_rgba(16,185,129,0.5)] motion-reduce:transition-none">
-            <div className="w-10 h-10 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
-              <IconShieldCheck className="w-6 h-6" />
+          <div className="flex-1 min-w-[270px] rounded-xl border-2 border-emerald-400 bg-[#042416] p-3.5 flex items-center space-x-3.5 shadow-[0_0_24px_rgba(16,185,129,0.35)] ring-1 ring-emerald-400/50 min-h-[88px] transition-all duration-200 hover:shadow-[0_0_32px_rgba(16,185,129,0.5)] motion-reduce:transition-none">
+            <div className="w-9 h-9 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
+              <IconShieldCheck className="w-5 h-5" />
             </div>
             <div className="min-w-0">
-              <div className="text-[15px] font-bold text-white truncate">PatchPilot Proxy Shield</div>
-              <div className="text-xs text-emerald-300 font-semibold truncate mt-1">{proxyNodeSubtitle}</div>
+              <div className="text-[14px] sm:text-[15px] font-display font-semibold text-white">PatchPilot Proxy Shield</div>
+              <div className="text-xs text-emerald-300 font-medium mt-0.5 font-sans leading-snug">{proxyNodeSubtitle}</div>
             </div>
           </div>
 
           {/* Prominent Forwarding Directional Arrow 2 */}
-          <span className="hidden lg:flex text-emerald-400 font-extrabold text-3xl px-3 select-none leading-none drop-shadow-[0_0_12px_rgba(16,185,129,0.9)]">
+          <span className="hidden lg:flex text-emerald-400 font-extrabold text-2xl lg:text-3xl px-3 select-none leading-none drop-shadow-[0_0_12px_rgba(16,185,129,0.9)]">
             →
           </span>
 
           {/* Node 3: Upstream Target Lab (Cyan Outline) */}
-          <div className="flex-1 min-w-[240px] rounded-xl border border-cyan-500/35 bg-[#09151C]/90 p-4 flex items-center space-x-3.5 shadow-sm min-h-[86px] transition-all duration-200 hover:border-cyan-400/60 hover:shadow-[0_0_15px_rgba(6,182,212,0.15)] motion-reduce:transition-none">
-            <div className="w-10 h-10 rounded-lg bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0">
+          <div className="flex-1 min-w-[240px] rounded-xl border border-cyan-500/35 bg-[#09151C]/90 p-3.5 flex items-center space-x-3.5 shadow-sm min-h-[80px] transition-all duration-200 hover:border-cyan-400/60 hover:shadow-[0_0_15px_rgba(6,182,212,0.15)] motion-reduce:transition-none">
+            <div className="w-9 h-9 rounded-lg bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0">
               <IconServer className="w-5 h-5" />
             </div>
             <div className="min-w-0">
-              <div className="text-[15px] font-bold text-white truncate">Upstream Target Lab</div>
-              <div className="text-xs text-slate-300 font-mono mt-1 whitespace-normal break-words">
+              <div className="text-[14px] sm:text-[15px] font-display font-semibold text-white">Upstream Target Lab</div>
+              <div className="text-xs text-slate-400 font-mono mt-0.5 whitespace-normal break-words leading-snug">
                 {upstreamTarget ? `${upstreamTarget} (${sourceStack || 'PHP stack'})` : '127.0.0.1:8081 (PHP stack)'}
               </div>
             </div>
@@ -627,19 +627,19 @@ export default function SecurityOverview({ onNavigate }) {
         </div>
 
         {/* Out-of-Band Control Plane Card: Management API Port 8000 */}
-        <div className="w-full max-w-xl mx-auto rounded-xl border border-cyan-500/35 bg-[#081822]/90 p-3.5 px-5 flex items-center justify-between shadow-sm transition-all duration-200 hover:border-cyan-400/60 motion-reduce:transition-none">
+        <div className="w-full max-w-xl mx-auto rounded-xl border border-cyan-500/35 bg-[#081822]/90 p-3 px-4 sm:px-5 flex items-center justify-between shadow-sm transition-all duration-200 hover:border-cyan-400/60 motion-reduce:transition-none">
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 rounded-lg bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0">
               <IconSettings className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="text-sm font-bold text-white">Management API (Control Plane)</span>
+                <span className="text-xs sm:text-sm font-display font-semibold text-white">Management API (Control Plane)</span>
                 <span className="text-[10px] font-mono text-cyan-300 bg-cyan-500/10 px-1.5 py-0.5 rounded border border-cyan-500/30">
                   (Out-of-Band)
                 </span>
               </div>
-              <div className="text-xs text-slate-300 font-mono mt-0.5">
+              <div className="text-xs text-slate-400 font-mono mt-0.5">
                 Port 8000 · Administrative control & telemetry
               </div>
             </div>
