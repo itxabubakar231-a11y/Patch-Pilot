@@ -525,7 +525,7 @@ export default function ProxyShieldControls() {
           </p>
           {error.code && (
             <div className="pt-1">
-              <span className="font-mono text-[10px] text-rose-300 bg-rose-950/60 px-2 py-0.5 rounded border border-rose-800/60">
+              <span className="font-mono text-[10.5px] text-rose-300 bg-rose-950/60 px-2 py-0.5 rounded border border-rose-800/60">
                 ERROR CODE: {error.code}
               </span>
             </div>
@@ -548,114 +548,106 @@ export default function ProxyShieldControls() {
     <>
       {/* Background content wrapped with inert and aria-hidden during modal display */}
       <div
-        className="space-y-6"
+        className="space-y-3 sm:space-y-3.5"
         inert={isAnyModalOpen ? '' : undefined}
         aria-hidden={isAnyModalOpen ? 'true' : undefined}
       >
-        {/* 1. Header & Live Status Controls (Stage 1 Parity) */}
-        <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-emerald-500/20">
-          <div className="space-y-1">
-            <div className="flex flex-wrap items-center gap-2.5">
-              <span className="text-emerald-400 font-mono font-bold text-xs tracking-wider uppercase">
+        {/* 1. Header & Live Status Controls */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-emerald-500/15">
+          <div className="space-y-0.5">
+            <div className="flex items-center space-x-2">
+              <span className="text-emerald-400 font-mono font-bold text-[10.5px] tracking-wider uppercase bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded">
                 ZONE 3
               </span>
               <span className="text-slate-600 text-xs">•</span>
-              {/* Active Mode Badge */}
-              <span
-                className={`text-[10px] font-mono uppercase font-bold px-2.5 py-0.5 rounded border transition-colors ${
-                  currentMode === 'enforce'
-                    ? 'bg-rose-500/20 text-rose-300 border-rose-500/40 shadow-sm shadow-rose-950/30'
-                    : currentMode === 'shadow'
-                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-sm shadow-emerald-950/30'
-                    : 'bg-slate-800 text-slate-400 border-slate-700'
-                }`}
-              >
-                ACTIVE: {currentMode.toUpperCase()}
-              </span>
-
-              {/* Mock vs Live Data Mode Badge */}
-              <span
-                className={`text-[10px] font-mono uppercase font-semibold px-2 py-0.5 rounded border ${
-                  isMockMode
-                    ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30'
-                    : isLiveConnected
-                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                    : 'bg-amber-500/10 text-amber-300 border-amber-500/30'
-                }`}
-              >
-                {isMockMode
-                  ? 'Data: Mock Fixture'
-                  : isLiveConnected
-                  ? 'Data: Live Backend'
-                  : 'Data: Real Mode (Unverified)'}
+              <span className="text-xs text-slate-400 font-sans">
+                {isMockMode ? 'Simulated Lab Posture' : 'Real Backend Mode'}
               </span>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight leading-tight">
+            <h1 className="text-xl sm:text-2xl font-display font-bold text-white tracking-tight leading-tight">
               Proxy Shield Controls
             </h1>
 
-            <p className="text-xs text-slate-400 max-w-2xl leading-relaxed">
+            <p className="text-xs text-slate-400 font-sans leading-relaxed max-w-xl">
               Reversible request filtering controls. Mode transitions are authenticated, gated by replay fixtures, and auditable.
             </p>
           </div>
 
-          {/* Replay Gate Status & UI Polling time */}
-          <div className="flex items-center space-x-3 text-xs shrink-0">
-            <div className="text-[11px] text-slate-400 hidden sm:flex items-center space-x-1.5" aria-live="polite">
+          {/* Unified Telemetry Status Cluster */}
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Active Mode Pill */}
+            <div
+              className={`inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-mono font-semibold border transition-colors ${
+                currentMode === 'enforce'
+                  ? 'bg-rose-500/20 text-rose-300 border-rose-500/40 shadow-sm shadow-rose-950/40'
+                  : currentMode === 'shadow'
+                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-[0_0_12px_rgba(16,185,129,0.25)]'
+                  : 'bg-slate-800 text-slate-300 border-slate-700'
+              }`}
+            >
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  currentMode === 'enforce'
+                    ? 'bg-rose-400 animate-pulse'
+                    : currentMode === 'shadow'
+                    ? 'bg-emerald-400 animate-pulse'
+                    : 'bg-slate-400'
+                }`}
+              />
+              <span>ACTIVE: {currentMode.toUpperCase()}</span>
+            </div>
+
+            {/* Replay Gate Status Badge */}
+            <div
+              className={`inline-flex items-center space-x-1.5 text-xs font-mono font-semibold px-2.5 py-1 rounded-full border transition-colors ${
+                isReadyForEnforce
+                  ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/35'
+                  : 'bg-amber-500/15 text-amber-300 border-amber-500/35'
+              }`}
+              title={
+                isReadyForEnforce
+                  ? 'All approved rules passed replay testing. Eligible for Enforce mode.'
+                  : 'Enforce mode blocked until offline test suite passes.'
+              }
+            >
+              {isReadyForEnforce ? (
+                <>
+                  <IconCheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <span>READY FOR ENFORCE</span>
+                </>
+              ) : (
+                <>
+                  <IconHourglass className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                  <span>REPLAY REQUIRED</span>
+                </>
+              )}
+            </div>
+
+            {/* UI Polled Tick */}
+            <div className="text-[11px] text-slate-400 hidden xl:flex items-center space-x-1 pl-1" aria-live="polite">
               <IconClock className="w-3.5 h-3.5 text-slate-500" />
               <span>UI Polled:</span>
               <strong className="text-slate-300 font-mono tabular-nums">{formatTime(lastUpdated)}</strong>
-              <span className="text-slate-500">(5s)</span>
-            </div>
-
-            <div className="flex items-center space-x-1.5 text-xs">
-              <span className="text-slate-400 text-[11px]">Gate:</span>
-              <span
-                className={`font-mono font-semibold text-[11px] px-2.5 py-0.5 rounded border transition-colors inline-flex items-center space-x-1 ${
-                  isReadyForEnforce
-                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                    : 'bg-amber-500/10 text-amber-300 border-amber-500/30'
-                }`}
-                title={
-                  isReadyForEnforce
-                    ? 'All approved rules passed replay testing. Eligible for Enforce mode.'
-                    : 'Enforce mode blocked until offline test suite passes.'
-                }
-              >
-                {isReadyForEnforce ? (
-                  <>
-                    <IconCheckCircle className="w-3 h-3 text-emerald-400 shrink-0" />
-                    <span>READY FOR ENFORCE</span>
-                  </>
-                ) : (
-                  <>
-                    <IconHourglass className="w-3 h-3 text-amber-400 shrink-0" />
-                    <span>REPLAY REQUIRED</span>
-                  </>
-                )}
-              </span>
+              <span className="text-slate-500 font-mono text-[10px]">(5s)</span>
             </div>
           </div>
         </div>
 
-        {/* 2. Mock vs Live Accuracy Disclosure Banner */}
+        {/* 2. Mock vs Live Accuracy Disclosure Banner - Mobile wrap without truncation */}
         {isMockMode ? (
           <div
             role="note"
             aria-label="Demo shield controls disclosure"
-            className="rounded-xl border border-emerald-500/30 bg-[#0C1615]/90 p-3.5 text-xs flex flex-wrap items-center justify-between gap-2.5 text-emerald-200 shadow-sm backdrop-blur-md"
+            className="rounded-lg border border-emerald-500/20 bg-[#06120E]/90 px-3.5 py-2 text-xs flex flex-wrap sm:flex-nowrap items-center justify-between gap-2.5 sm:gap-3 text-slate-300 shadow-sm"
           >
-            <div className="flex items-center space-x-2.5">
-              <IconInfo className="w-4 h-4 text-emerald-400 shrink-0" />
-              <div>
-                <span className="font-bold text-emerald-300">DEMO FIXTURE MODE ACTIVE:</span>{' '}
-                <span className="text-slate-300">
-                  Proxy shield controls and replay testing are simulated in-memory using local fixtures. No live proxy mode transitions or packet filtering are performed.
-                </span>
-              </div>
+            <div className="flex items-start sm:items-center space-x-2 min-w-0">
+              <IconInfo className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5 sm:mt-0" />
+              <span className="text-xs font-sans leading-relaxed text-slate-300">
+                <strong className="text-emerald-300 font-medium">Demo Fixture Mode:</strong> Simulated in-memory using local fixtures. No live proxy transitions or packet filtering performed.
+              </span>
             </div>
-            <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-700/60 uppercase">
+            <span className="text-[10.5px] sm:text-[11px] font-mono text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-700/50 uppercase shrink-0 font-medium self-start sm:self-auto">
               VITE_DATA_MODE=mock
             </span>
           </div>
@@ -663,38 +655,32 @@ export default function ProxyShieldControls() {
           <div
             role="note"
             aria-label="Live backend mode active"
-            className="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-3.5 text-xs flex flex-wrap items-center justify-between gap-2.5 text-emerald-200 shadow-sm backdrop-blur-md"
+            className="rounded-lg border border-emerald-500/20 bg-emerald-950/20 px-3.5 py-2 text-xs flex flex-wrap sm:flex-nowrap items-center justify-between gap-2.5 sm:gap-3 text-emerald-200 shadow-sm"
           >
-            <div className="flex items-center space-x-2.5">
-              <IconShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-              <div>
-                <span className="font-bold text-emerald-300">LIVE PROXY MANAGEMENT CONNECTED:</span>{' '}
-                <span className="text-slate-300">
-                  Mode transitions, replay evaluations, and rollbacks are executed by the FastAPI service on <code className="text-white font-mono">http://127.0.0.1:8000</code>.
-                </span>
-              </div>
+            <div className="flex items-start sm:items-center space-x-2 min-w-0">
+              <IconShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5 sm:mt-0" />
+              <span className="text-xs font-sans leading-relaxed text-emerald-200">
+                <strong className="text-emerald-300 font-medium">Management API Connected:</strong> FastAPI management verified on <code className="text-white font-mono">http://127.0.0.1:8000</code>. Proxy ingress on port 8080.
+              </span>
             </div>
-            <span className="text-[10px] font-mono text-emerald-400 bg-emerald-900/50 px-2 py-0.5 rounded border border-emerald-700/60 uppercase">
-              Verified Port 8000
+            <span className="text-[10.5px] sm:text-[11px] font-mono text-emerald-400 bg-emerald-900/60 px-2 py-0.5 rounded border border-emerald-700/60 uppercase shrink-0 font-medium self-start sm:self-auto">
+              Port 8000
             </span>
           </div>
         ) : (
           <div
             role="note"
             aria-label="Real mode unverified"
-            className="rounded-xl border border-amber-500/30 bg-amber-950/20 p-3.5 text-xs flex flex-wrap items-center justify-between gap-2.5 text-amber-200 shadow-sm backdrop-blur-md"
+            className="rounded-lg border border-amber-500/20 bg-amber-950/20 px-3.5 py-2 text-xs flex flex-wrap sm:flex-nowrap items-center justify-between gap-2.5 sm:gap-3 text-amber-200 shadow-sm"
           >
-            <div className="flex items-center space-x-2.5">
-              <IconHourglass className="w-4 h-4 text-amber-400 shrink-0" />
-              <div>
-                <span className="font-bold text-amber-300">REAL MODE CONFIGURED (CONNECTION UNVERIFIED):</span>{' '}
-                <span className="text-slate-300">
-                  Configured for live API, but an authenticated response from <code className="text-white font-mono">http://127.0.0.1:8000</code> has not been established yet.
-                </span>
-              </div>
+            <div className="flex items-start sm:items-center space-x-2 min-w-0">
+              <IconHourglass className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5 sm:mt-0" />
+              <span className="text-xs font-sans leading-relaxed text-amber-200">
+                <strong className="text-amber-300 font-medium">Real Mode Configured:</strong> Awaiting verified connection to Management API on <code className="text-white font-mono">http://127.0.0.1:8000</code>.
+              </span>
             </div>
-            <span className="text-[10px] font-mono text-amber-400 bg-amber-900/50 px-2 py-0.5 rounded border border-amber-700/60 uppercase">
-              Awaiting 8000 Response
+            <span className="text-[10.5px] sm:text-[11px] font-mono text-amber-400 bg-amber-900/60 px-2 py-0.5 rounded border border-amber-700/60 uppercase shrink-0 font-medium self-start sm:self-auto">
+              Awaiting 8000
             </span>
           </div>
         )}
@@ -704,7 +690,7 @@ export default function ProxyShieldControls() {
           <div
             role="alert"
             aria-live="polite"
-            className="p-3.5 rounded-xl text-xs flex items-center justify-between gap-3 bg-rose-500/10 text-rose-300 border border-rose-500/30 shadow-sm backdrop-blur-md"
+            className="p-3 rounded-lg text-xs flex items-center justify-between gap-3 bg-rose-500/10 text-rose-300 border border-rose-500/30 shadow-sm"
           >
             <div className="flex items-center space-x-2">
               <IconAlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
@@ -718,7 +704,7 @@ export default function ProxyShieldControls() {
               <button
                 type="button"
                 onClick={() => fetchShieldData(false)}
-                className="text-xs px-2.5 py-1 rounded bg-rose-900/40 hover:bg-rose-800 text-rose-200 border border-rose-700/60 transition"
+                className="text-xs px-2 py-0.5 rounded bg-rose-900/40 hover:bg-rose-800 text-rose-200 border border-rose-700/60 transition"
               >
                 Retry
               </button>
@@ -739,7 +725,7 @@ export default function ProxyShieldControls() {
           <div
             role="alert"
             aria-live="assertive"
-            className={`p-4 rounded-xl text-xs flex items-start justify-between gap-3 border shadow-sm backdrop-blur-md ${
+            className={`p-3.5 rounded-lg text-xs flex items-start justify-between gap-3 border shadow-sm ${
               actionFeedback.type === 'success'
                 ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30 shadow-emerald-950/20'
                 : 'bg-rose-500/10 text-rose-300 border-rose-500/30 shadow-rose-950/20'
@@ -751,11 +737,11 @@ export default function ProxyShieldControls() {
               ) : (
                 <IconAlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
               )}
-              <div className="space-y-1">
-                <span className="font-semibold block text-white">
+              <div className="space-y-0.5">
+                <span className="font-semibold block text-white text-xs">
                   {actionFeedback.type === 'success' ? 'Operation Completed' : 'Operation Denied'}
                 </span>
-                <p className="text-[11px] leading-relaxed text-slate-300">{actionFeedback.message}</p>
+                <p className="text-[11px] leading-relaxed text-slate-300 font-sans">{actionFeedback.message}</p>
               </div>
             </div>
             <button
@@ -769,60 +755,67 @@ export default function ProxyShieldControls() {
           </div>
         )}
 
-        {/* 5. Main Defense Posture Selection Card (Stage 1 Aesthetics) */}
+        {/* 5. Main Defense Posture Selection Section */}
         <section
           aria-label="Defense posture selector"
-          className="rounded-xl border border-emerald-500/20 bg-[#0C1615]/90 backdrop-blur-md p-6 space-y-5 shadow-sm"
+          className="space-y-2.5"
         >
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center space-x-2">
-                <IconShield className="w-4 h-4 text-emerald-400" />
-                <span>1. Select Defense Posture</span>
-              </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Choose the inspection and enforcement behavior of the reverse proxy on port 8080.
-              </p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <IconShield className="w-4 h-4 text-emerald-400" />
+              <h2 className="text-[15px] sm:text-[16px] font-display font-semibold text-white tracking-tight">
+                1. Select Defense Posture
+              </h2>
+              <span className="text-slate-600 text-xs hidden sm:inline">•</span>
+              <span className="text-xs text-slate-400 font-sans hidden sm:inline">Port 8080 Reverse Proxy Filter</span>
             </div>
             <span className="text-[11px] font-mono text-slate-400">
-              {isMockMode ? 'Fixture Timestamp: ' : 'Backend Updated: '}
+              {isMockMode ? 'Fixture: ' : 'Updated: '}
               <span className="text-slate-300 tabular-nums">
                 {proxyStatus?.updated_at ? `${proxyStatus.updated_at}${isMockMode ? ' (mock)' : ''}` : 'Recently'}
               </span>
             </span>
           </div>
 
-          {/* Three-Button Mode Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Three-Button Mode Grid — Refined ~150px Security Control Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {/* OFF Mode Button */}
             <button
               type="button"
               onClick={(e) => handleRequestModeChange('off', e)}
               disabled={isUpdatingMode || currentMode === 'off'}
               aria-pressed={currentMode === 'off'}
-              className={`p-4 rounded-xl border text-left transition-all duration-200 active:scale-[0.99] relative flex flex-col justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 ${
+              className={`p-3.5 rounded-xl border text-left transition-all duration-200 active:scale-[0.99] relative flex flex-col justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 min-h-[148px] sm:min-h-[155px] ${
                 currentMode === 'off'
                   ? 'bg-slate-800/90 border-slate-500 text-white shadow-lg shadow-slate-950/40 ring-1 ring-slate-400/50'
                   : 'bg-[#080E0C]/90 border-slate-800/80 text-slate-400 hover:border-slate-700 hover:text-slate-200 hover:bg-[#0B1512]'
               }`}
             >
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold font-mono tracking-wider">OFF</span>
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <IconShieldBan className="w-4 h-4 text-slate-400 shrink-0" />
+                    <span className="text-sm sm:text-[15px] font-display font-semibold tracking-wider text-slate-300">
+                      OFF
+                    </span>
+                  </div>
                   {currentMode === 'off' && (
-                    <span className="text-[10px] font-mono bg-slate-700 text-slate-200 px-2 py-0.5 rounded font-bold border border-slate-600">
+                    <span className="text-[11px] font-mono bg-slate-700 text-slate-200 px-2 py-0.5 rounded font-bold border border-slate-600">
                       ACTIVE
                     </span>
                   )}
                 </div>
-                <h4 className="text-sm font-bold text-slate-200 mb-1">Emergency Passthrough</h4>
-                <p className="text-[11px] text-slate-400 leading-relaxed">
-                  Emergency option. Rule evaluation is disabled. Traffic forwards directly to the lab target uninspected.
-                </p>
+                <div>
+                  <h4 className="text-[13px] font-semibold text-slate-200 mt-1">Emergency Passthrough</h4>
+                  <p className="text-xs text-slate-400 font-sans leading-relaxed mt-0.5">
+                    Rule evaluation disabled. Ingress traffic forwards directly to lab target uninspected.
+                  </p>
+                </div>
               </div>
-              <span className="text-[10px] text-slate-500 mt-4 block pt-2 border-t border-slate-800/60 font-mono">
-                Action: No rule evaluation
-              </span>
+              <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
+                <span>Action:</span>
+                <span className="text-slate-200 font-medium">Bypass &amp; Forward</span>
+              </div>
             </button>
 
             {/* SHADOW Mode Button (Default) */}
@@ -831,31 +824,37 @@ export default function ProxyShieldControls() {
               onClick={(e) => handleRequestModeChange('shadow', e)}
               disabled={isUpdatingMode || currentMode === 'shadow'}
               aria-pressed={currentMode === 'shadow'}
-              className={`p-4 rounded-xl border text-left transition-all duration-200 active:scale-[0.99] relative flex flex-col justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${
+              className={`p-3.5 rounded-xl border text-left transition-all duration-200 active:scale-[0.99] relative flex flex-col justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 min-h-[148px] sm:min-h-[155px] ${
                 currentMode === 'shadow'
                   ? 'bg-emerald-500/10 border-emerald-500/60 text-emerald-200 shadow-[0_0_15px_rgba(16,185,129,0.15)] ring-1 ring-emerald-500/50'
                   : 'bg-[#080E0C]/90 border-emerald-500/20 text-slate-400 hover:border-emerald-500/40 hover:text-emerald-300 hover:bg-[#0B1512]'
               }`}
             >
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold font-mono tracking-wider text-emerald-400">
-                    SHADOW (Default)
-                  </span>
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <IconEye className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span className="text-sm sm:text-[15px] font-display font-semibold tracking-wider text-emerald-400">
+                      SHADOW (Default)
+                    </span>
+                  </div>
                   {currentMode === 'shadow' && (
-                    <span className="text-[10px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded font-bold">
+                    <span className="text-[11px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded font-bold">
                       ACTIVE
                     </span>
                   )}
                 </div>
-                <h4 className="text-sm font-bold text-slate-200 mb-1">Non-Blocking Observation</h4>
-                <p className="text-[11px] text-slate-400 leading-relaxed">
-                  Matches demo queries and logs them as <code className="text-emerald-300">shadow_match</code>. Requests safely reach the lab target with 0% false interruption.
-                </p>
+                <div>
+                  <h4 className="text-[13px] font-semibold text-white mt-1">Non-Blocking Observation</h4>
+                  <p className="text-xs text-slate-400 font-sans leading-relaxed mt-0.5">
+                    Matches demo queries as <code className="text-emerald-300 font-mono text-[11px]">shadow_match</code>. Matched requests are logged and forwarded without proxy blocking.
+                  </p>
+                </div>
               </div>
-              <span className="text-[10px] text-emerald-400/80 mt-4 block pt-2 border-t border-emerald-500/20 font-mono">
-                Action: Log & forward (Zero blocking)
-              </span>
+              <div className="mt-2.5 pt-2 border-t border-emerald-500/20 flex items-center justify-between text-xs font-mono text-emerald-400/90">
+                <span>Action:</span>
+                <span className="text-emerald-300 font-medium">Log &amp; Forward (0% blocking)</span>
+              </div>
             </button>
 
             {/* ENFORCE Mode Button */}
@@ -864,64 +863,73 @@ export default function ProxyShieldControls() {
               onClick={(e) => handleRequestModeChange('enforce', e)}
               disabled={isUpdatingMode || isEnforcePendingVerification || currentMode === 'enforce' || !isReadyForEnforce}
               aria-pressed={currentMode === 'enforce'}
-              className={`p-4 rounded-xl border text-left transition-all duration-200 active:scale-[0.99] relative flex flex-col justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 ${
+              className={`p-3.5 rounded-xl border text-left transition-all duration-200 active:scale-[0.99] relative flex flex-col justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 min-h-[148px] sm:min-h-[155px] ${
                 currentMode === 'enforce'
                   ? 'bg-rose-500/15 border-rose-500/60 text-rose-200 shadow-lg shadow-rose-950/40 ring-1 ring-rose-500/50'
                   : !isReadyForEnforce
-                  ? 'bg-[#080E0C]/50 border-slate-800/50 text-slate-500 cursor-not-allowed opacity-65'
+                  ? 'bg-[#080E0C]/75 border-slate-700/60 text-slate-300 cursor-not-allowed'
                   : 'bg-[#080E0C]/90 border-rose-500/30 text-slate-300 hover:border-rose-500/50 hover:text-rose-200 hover:bg-[#0B1512]'
               }`}
             >
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold font-mono tracking-wider text-rose-400">
-                    ENFORCE
-                  </span>
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <IconShieldAlert className="w-4 h-4 text-rose-400 shrink-0" />
+                    <span className="text-sm sm:text-[15px] font-display font-semibold tracking-wider text-rose-400">
+                      ENFORCE
+                    </span>
+                  </div>
                   {currentMode === 'enforce' ? (
-                    <span className="text-[10px] font-mono bg-rose-500/20 text-rose-300 border border-rose-500/40 px-2 py-0.5 rounded font-bold">
+                    <span className="text-[11px] font-mono bg-rose-500/20 text-rose-300 border border-rose-500/40 px-2 py-0.5 rounded font-bold">
                       ACTIVE
                     </span>
                   ) : !isReadyForEnforce ? (
-                    <span className="text-[10px] font-mono bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded border border-amber-500/30 font-bold">
+                    <span className="text-[11px] font-mono bg-amber-500/15 text-amber-300 px-2 py-0.5 rounded border border-amber-500/35 font-bold">
                       {isEnforcePendingVerification
                         ? 'VERIFYING...'
                         : isReadinessUnverified
                         ? 'UNVERIFIED'
                         : 'GATED (REPLAY REQUIRED)'}
                     </span>
-                  ) : null}
+                  ) : (
+                    <span className="text-[11px] font-mono bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded border border-emerald-500/40 font-bold">
+                      READY
+                    </span>
+                  )}
                 </div>
-                <h4 className="text-sm font-bold text-slate-200 mb-1">Active 403 Enforcement</h4>
-                <p className="text-[11px] text-slate-400 leading-relaxed">
-                  Actively intercepts requests matching verified rules, returning HTTP 403 Forbidden. Requires passing offline replay test.
-                </p>
+                <div>
+                  <h4 className="text-[13px] font-semibold text-slate-100 mt-1">Active 403 Enforcement</h4>
+                  <p className="text-xs text-slate-300 font-sans leading-relaxed mt-0.5">
+                    Actively intercepts requests matching verified rules, returning HTTP 403 Forbidden. Offline replay test required.
+                  </p>
+                </div>
               </div>
-              <span className="text-[10px] text-rose-400/80 mt-4 block pt-2 border-t border-slate-800/60 font-mono">
-                {isReadyForEnforce
-                  ? 'Action: Block matching (403)'
-                  : isEnforcePendingVerification
-                  ? 'Gate: Verification pending...'
-                  : isReadinessUnverified
-                  ? 'Gate: Status refresh unverified'
-                  : 'Gate: Passing replay test required'}
-              </span>
+              <div className="mt-2.5 pt-2 border-t border-slate-800/60 flex items-center justify-between text-xs font-mono text-rose-400/90">
+                <span>{isReadyForEnforce ? 'Action:' : 'Gate:'}</span>
+                <span className={isReadyForEnforce ? 'text-rose-300 font-medium' : 'text-amber-300 font-medium'}>
+                  {isReadyForEnforce
+                    ? 'Block matching (403)'
+                    : isEnforcePendingVerification
+                    ? 'Verification pending...'
+                    : isReadinessUnverified
+                    ? 'Status refresh unverified'
+                    : 'Passing replay test required'}
+                </span>
+              </div>
             </button>
           </div>
         </section>
 
-        {/* 6. Emergency Rollback & Safety Card */}
+        {/* 6. Emergency Rollback Control — Sleek Safety Bar */}
         <section
           aria-label="Emergency rollback control"
-          className="rounded-xl border border-amber-500/30 bg-amber-500/5 backdrop-blur-md p-5 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+          className="rounded-lg border border-amber-500/25 bg-amber-500/5 px-3.5 py-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 shadow-sm"
         >
-          <div className="space-y-1 max-w-2xl">
-            <div className="flex items-center space-x-2">
-              <IconRefresh className="w-4 h-4 text-amber-400 shrink-0" />
-              <h3 className="text-sm font-bold text-white">Emergency Rollback Control</h3>
-            </div>
-            <p className="text-xs text-slate-300 leading-relaxed">
-              Immediately disables active enforcement and restores safe <strong>Shadow Mode</strong>. Preserves all configured rules and audit logs in SQLite without modifying historical data.
-            </p>
+          <div className="flex items-center space-x-2 min-w-0">
+            <IconRefresh className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+            <span className="text-xs text-slate-300 font-sans leading-normal">
+              <strong className="text-amber-300 font-medium">Emergency Rollback:</strong> Instantly disable active enforcement and revert proxy to safe <strong className="text-emerald-300">Shadow Mode</strong>. Preserves configured rules and audit logs.
+            </span>
           </div>
 
           <button
@@ -929,9 +937,9 @@ export default function ProxyShieldControls() {
             onClick={handleOpenRollbackModal}
             disabled={isRollingBack}
             aria-busy={isRollingBack}
-            className="shrink-0 px-4 py-2.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition-all duration-150 active:scale-[0.98] shadow-md shadow-amber-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 disabled:opacity-50 flex items-center space-x-1.5"
+            className="shrink-0 px-3 py-1 rounded-md bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-sans font-bold transition-all duration-150 active:scale-[0.98] shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 disabled:opacity-50 flex items-center space-x-1.5"
           >
-            <IconRefresh className={`w-3.5 h-3.5 ${isRollingBack ? 'animate-spin' : ''}`} />
+            <IconRefresh className={`w-3 h-3 ${isRollingBack ? 'animate-spin' : ''}`} />
             <span>{isRollingBack ? 'Rolling back...' : 'Rollback to Shadow'}</span>
           </button>
         </section>
@@ -939,17 +947,16 @@ export default function ProxyShieldControls() {
         {/* 7. Replay Gate & Security Rules Table */}
         <section
           aria-label="Security rules and replay evaluation"
-          className="rounded-xl border border-emerald-500/20 bg-[#0C1615]/90 backdrop-blur-md p-6 space-y-4 shadow-sm"
+          className="rounded-xl border border-emerald-500/20 bg-[#0C1615]/90 backdrop-blur-md p-4 sm:p-4.5 space-y-3 shadow-sm"
         >
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center space-x-2">
-                <IconDocument className="w-4 h-4 text-emerald-400" />
-                <span>2. Seeded Security Rules & Replay Gate</span>
-              </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Every rule must pass offline replay testing against harmless lab fixtures before Enforce mode is permitted.
-              </p>
+            <div className="flex items-center space-x-2">
+              <IconDocument className="w-4 h-4 text-emerald-400 shrink-0" />
+              <h2 className="text-[15px] sm:text-[16px] font-display font-semibold text-white tracking-tight">
+                2. Seeded Security Rules &amp; Replay Gate
+              </h2>
+              <span className="text-slate-600 text-xs hidden sm:inline">•</span>
+              <span className="text-xs text-slate-400 font-sans hidden sm:inline">Offline Replay Verification</span>
             </div>
             <span className="text-[11px] font-mono text-slate-400">
               Fixture Version: <strong className="text-emerald-400">lab-v1</strong>
@@ -961,25 +968,24 @@ export default function ProxyShieldControls() {
             <table className="w-full min-w-[640px] text-left text-xs border-collapse">
               <caption className="sr-only">Seeded security detection rules and replay verification state</caption>
               <thead>
-                <tr className="border-b border-emerald-500/20 bg-[#080E0C]/90 text-[10px] text-slate-400 uppercase tracking-wider font-semibold font-mono">
-                  <th scope="col" className="px-4 py-3">ID</th>
-                  <th scope="col" className="px-4 py-3">Rule Name</th>
-                  <th scope="col" className="px-4 py-3">Matcher Pattern</th>
-                  <th scope="col" className="px-4 py-3">Approval</th>
-                  <th scope="col" className="px-4 py-3">Replay Status</th>
-                  <th scope="col" className="px-4 py-3 text-right">Gate Action</th>
+                <tr className="border-b border-emerald-500/20 bg-[#080E0C]/90 text-[11px] text-slate-300 uppercase tracking-wider font-semibold font-mono">
+                  <th scope="col" className="px-3 py-2">ID</th>
+                  <th scope="col" className="px-3 py-2">Rule Name</th>
+                  <th scope="col" className="px-3 py-2">Matcher Pattern</th>
+                  <th scope="col" className="px-3 py-2">Approval</th>
+                  <th scope="col" className="px-3 py-2">Replay Status</th>
+                  <th scope="col" className="px-3 py-2 text-right">Gate Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-emerald-500/10 font-mono text-slate-200">
                 {rules.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-xs text-slate-500 font-sans">
+                    <td colSpan={6} className="px-4 py-6 text-center text-xs text-slate-500 font-sans">
                       No security rules currently configured. Seeded demo rules will be populated upon backend initialization.
                     </td>
                   </tr>
                 ) : (
                   rules.map((rule) => {
-                    // Latest replay result for this rule takes precedence over historic replay_passed.
                     const isThisRuleReplayed = replayResult && Number(replayResult.rule_id) === Number(rule.id)
                     const passed = isThisRuleReplayed
                       ? Boolean(replayResult.passed)
@@ -990,13 +996,13 @@ export default function ProxyShieldControls() {
 
                     return (
                       <tr key={rule.id} className="hover:bg-emerald-950/20 transition-colors">
-                        <td className="px-4 py-3 text-slate-400 font-bold">#{rule.id}</td>
-                        <td className="px-4 py-3 font-sans font-medium text-white">
+                        <td className="px-3 py-2.5 text-slate-400 font-bold">#{rule.id}</td>
+                        <td className="px-3 py-2.5 text-white">
                           <div>
-                            <span>{rule.name}</span>
+                            <span className="font-display font-medium text-xs sm:text-[13px]">{rule.name}</span>
                             {rule.rule_digest && (
                               <span
-                                className="block text-[10px] text-slate-500 font-mono truncate max-w-xs"
+                                className="block text-[11px] text-slate-400 font-mono truncate max-w-xs"
                                 title={`Digest: ${rule.rule_digest}`}
                               >
                                 Digest: {rule.rule_digest.slice(0, 16)}...
@@ -1004,48 +1010,48 @@ export default function ProxyShieldControls() {
                             )}
                           </div>
                         </td>
-                        <td className="px-4 py-3">
-                          <span className="px-2 py-0.5 rounded bg-[#070D0B] border border-emerald-500/20 text-emerald-300">
+                        <td className="px-3 py-2.5">
+                          <span className="px-2 py-0.5 rounded bg-[#070D0B] border border-emerald-500/20 text-emerald-300 font-mono text-xs">
                             {rule.match_config?.name}={rule.match_config?.value}
                           </span>
                         </td>
-                        <td className="px-4 py-3">
-                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 whitespace-nowrap">
+                        <td className="px-3 py-2.5">
+                          <span className="text-[11px] font-sans font-semibold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/35 whitespace-nowrap">
                             {rule.human_approved ? 'Approved Demo' : 'Pending Review'}
                           </span>
                         </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
+                        <td className="px-3 py-2.5 whitespace-nowrap">
                           {passed ? (
                             isReadyForEnforce ? (
-                              <span className="inline-flex items-center space-x-1 text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-0.5 rounded">
+                              <span className="inline-flex items-center space-x-1 text-[11px] font-mono font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded">
                                 <IconCheckCircle className="w-3 h-3 text-emerald-400" />
                                 <span>Passed (Gate Ready)</span>
                               </span>
                             ) : (
-                              <span className="inline-flex items-center space-x-1 text-[10px] font-semibold text-cyan-400 bg-cyan-500/10 border border-cyan-500/30 px-2.5 py-0.5 rounded">
+                              <span className="inline-flex items-center space-x-1 text-[11px] font-mono font-semibold text-cyan-400 bg-cyan-500/10 border border-cyan-500/30 px-2 py-0.5 rounded">
                                 <IconCheckCircle className="w-3 h-3 text-cyan-400" />
                                 <span>Replay Passed (Pending Gate)</span>
                               </span>
                             )
                           ) : failed ? (
-                            <span className="inline-flex items-center space-x-1 text-[10px] font-semibold text-rose-400 bg-rose-500/10 border border-rose-500/30 px-2.5 py-0.5 rounded">
+                            <span className="inline-flex items-center space-x-1 text-[11px] font-mono font-semibold text-rose-400 bg-rose-500/10 border border-rose-500/30 px-2 py-0.5 rounded">
                               <IconClose className="w-3 h-3 text-rose-400" />
                               <span>Replay Failed</span>
                             </span>
                           ) : (
-                            <span className="inline-flex items-center space-x-1 text-[10px] font-semibold text-amber-300 bg-amber-500/10 border border-amber-500/30 px-2.5 py-0.5 rounded">
+                            <span className="inline-flex items-center space-x-1 text-[11px] font-mono font-semibold text-amber-300 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded">
                               <IconHourglass className="w-3 h-3 text-amber-400" />
                               <span>Replay Required</span>
                             </span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-right whitespace-nowrap">
+                        <td className="px-3 py-2.5 text-right whitespace-nowrap">
                           <button
                             type="button"
                             onClick={() => handleRunReplay(rule.id)}
                             disabled={isRunningReplay || isVerifyingReadiness}
                             aria-busy={isRunningReplay}
-                            className="px-3.5 py-1.5 rounded-lg bg-[#0E7490] hover:bg-[#0891B2] disabled:bg-slate-800 disabled:text-slate-600 text-white font-sans text-xs font-semibold transition-all duration-150 active:scale-[0.98] shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
+                            className="px-3 py-1 rounded-md bg-[#0E7490] hover:bg-[#0891B2] disabled:bg-slate-800 disabled:text-slate-600 text-white font-sans text-xs font-semibold transition-all duration-150 active:scale-[0.98] shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
                           >
                             {isRunningReplay ? (
                               <span className="flex items-center space-x-1.5">
@@ -1067,7 +1073,7 @@ export default function ProxyShieldControls() {
 
           {/* Replay Details Subcard with Calculated Progress Bars */}
           {replayResult && (
-            <div className="p-4 rounded-xl bg-[#080E0C]/90 border border-emerald-500/20 text-xs space-y-4 shadow-inner">
+            <div className="p-3.5 rounded-lg bg-[#080E0C]/90 border border-emerald-500/20 text-xs space-y-3 shadow-inner">
               <div className="flex flex-wrap items-center justify-between gap-2 text-slate-300">
                 <div className="flex items-center space-x-2">
                   {replayResult.passed ? (
@@ -1082,7 +1088,7 @@ export default function ProxyShieldControls() {
                     </span>
                   </span>
                   <span
-                    className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold border ${
+                    className={`text-[11px] font-mono px-2 py-0.5 rounded font-bold border ${
                       replayResult.passed
                         ? isReadyForEnforce
                           ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40'
@@ -1103,22 +1109,21 @@ export default function ProxyShieldControls() {
               </div>
 
               {/* Visual Progress Metrics Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 font-mono text-[11px]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 font-mono text-[11px]">
                 {/* Benign Fixtures Count */}
-                <div className="p-3 rounded-lg bg-[#070D0B] border border-emerald-500/15 space-y-1.5">
-                  <span className="text-slate-400 block text-[10px] font-sans">Benign Requests:</span>
+                <div className="p-2.5 rounded-lg bg-[#070D0B] border border-emerald-500/15 space-y-1">
+                  <span className="text-slate-400 block text-[11px] font-sans">Benign Requests:</span>
                   <span className="text-white font-bold text-sm tabular-nums">{benignTotal}</span>
-                  <span className="text-[10px] text-slate-500 block font-sans">Harmless lab baseline</span>
+                  <span className="text-[10.5px] text-slate-500 block font-sans">Harmless lab baseline</span>
                 </div>
 
                 {/* Benign Pass Progress Bar */}
-                <div className="p-3 rounded-lg bg-[#070D0B] border border-emerald-500/15 space-y-1.5">
+                <div className="p-2.5 rounded-lg bg-[#070D0B] border border-emerald-500/15 space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-400 text-[10px] font-sans">Benign Pass Rate:</span>
+                    <span className="text-slate-400 text-[11px] font-sans">Benign Pass Rate:</span>
                     <span className="text-emerald-400 font-bold tabular-nums">{benignPassPct}%</span>
                   </div>
-                  {/* Progress bar */}
-                  <div className="w-full h-2 rounded-full bg-slate-950 overflow-hidden border border-emerald-500/20">
+                  <div className="w-full h-1.5 rounded-full bg-slate-950 overflow-hidden border border-emerald-500/20">
                     <div
                       className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-300 ease-out motion-reduce:transition-none"
                       style={{ width: `${benignPassPct}%` }}
@@ -1129,26 +1134,25 @@ export default function ProxyShieldControls() {
                       aria-label="Benign pass rate"
                     />
                   </div>
-                  <span className="text-[10px] text-emerald-400/90 block font-sans">
+                  <span className="text-[11px] text-emerald-400/90 block font-sans">
                     {benignPassed} / {benignTotal} passed ({benignMatches} FP)
                   </span>
                 </div>
 
                 {/* Attack Markers Count */}
-                <div className="p-3 rounded-lg bg-[#070D0B] border border-emerald-500/15 space-y-1.5">
-                  <span className="text-slate-400 block text-[10px] font-sans">Attack Markers:</span>
+                <div className="p-2.5 rounded-lg bg-[#070D0B] border border-emerald-500/15 space-y-1">
+                  <span className="text-slate-400 block text-[11px] font-sans">Attack Markers:</span>
                   <span className="text-white font-bold text-sm tabular-nums">{attackTotal}</span>
-                  <span className="text-[10px] text-slate-500 block font-sans">Tested fixture patterns</span>
+                  <span className="text-[10.5px] text-slate-500 block font-sans">Tested fixture patterns</span>
                 </div>
 
                 {/* Attack Matches in Replay Progress Bar */}
-                <div className="p-3 rounded-lg bg-[#070D0B] border border-emerald-500/15 space-y-1.5">
+                <div className="p-2.5 rounded-lg bg-[#070D0B] border border-emerald-500/15 space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-400 text-[10px] font-sans">Attack Detection:</span>
+                    <span className="text-slate-400 text-[11px] font-sans">Attack Detection:</span>
                     <span className="text-cyan-400 font-bold tabular-nums">{attackInterceptPct}%</span>
                   </div>
-                  {/* Progress bar */}
-                  <div className="w-full h-2 rounded-full bg-slate-950 overflow-hidden border border-emerald-500/20">
+                  <div className="w-full h-1.5 rounded-full bg-slate-950 overflow-hidden border border-emerald-500/20">
                     <div
                       className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-emerald-400 transition-all duration-300 ease-out motion-reduce:transition-none"
                       style={{ width: `${attackInterceptPct}%` }}
@@ -1159,7 +1163,7 @@ export default function ProxyShieldControls() {
                       aria-label="Attack detection rate"
                     />
                   </div>
-                  <span className="text-[10px] text-cyan-400/90 block font-sans">
+                  <span className="text-[11px] text-cyan-400/90 block font-sans">
                     {attackMatches} / {attackTotal} matched in replay ({attackInterceptPct}%)
                   </span>
                 </div>
@@ -1197,7 +1201,7 @@ export default function ProxyShieldControls() {
                 )}
               </div>
               <div>
-                <h3 id="mode-modal-title" className="text-base font-bold text-white">
+                <h3 id="mode-modal-title" className="text-base font-display font-bold text-white">
                   Confirm Mode Transition to {pendingMode.toUpperCase()}
                 </h3>
                 <span className="text-[11px] text-slate-400 font-mono">
@@ -1206,7 +1210,7 @@ export default function ProxyShieldControls() {
               </div>
             </div>
 
-            <div className="text-xs text-slate-300 leading-relaxed space-y-2">
+            <div className="text-xs text-slate-300 font-sans leading-relaxed space-y-2">
               {pendingMode === 'enforce' ? (
                 <>
                   <p>
@@ -1218,7 +1222,7 @@ export default function ProxyShieldControls() {
                 </>
               ) : pendingMode === 'shadow' ? (
                 <p>
-                  You are switching PatchPilot into <strong>SHADOW</strong> mode. Matched queries will be recorded as <code>shadow_match</code> and forwarded to the lab target without blocking.
+                  You are switching PatchPilot into <strong>SHADOW</strong> mode. Matched queries will be recorded as <code className="text-emerald-300 font-mono">shadow_match</code> and forwarded to the lab target without blocking.
                 </p>
               ) : (
                 <p>
@@ -1275,14 +1279,14 @@ export default function ProxyShieldControls() {
                 <IconRefresh className="w-5 h-5 text-amber-400" />
               </div>
               <div>
-                <h3 id="rollback-modal-title" className="text-base font-bold text-white">
+                <h3 id="rollback-modal-title" className="text-base font-display font-bold text-white">
                   Confirm Emergency Rollback
                 </h3>
                 <span className="text-[11px] text-amber-400 font-mono">Restores Safe Shadow Mode</span>
               </div>
             </div>
 
-            <p className="text-xs text-slate-300 leading-relaxed">
+            <p className="text-xs text-slate-300 font-sans leading-relaxed">
               Are you sure you want to trigger an immediate emergency rollback? This will revert the proxy from <strong>{currentMode.toUpperCase()}</strong> back to <strong>SHADOW</strong> mode and log an auditable event. No rules will be deleted.
             </p>
 
