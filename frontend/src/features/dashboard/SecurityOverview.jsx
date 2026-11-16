@@ -453,7 +453,7 @@ export default function SecurityOverview({ onNavigate }) {
               {proxyCardBadge}
             </span>
           </div>
-          <div className="text-[20px] sm:text-[22px] font-display font-bold text-white tracking-tight leading-snug whitespace-nowrap">
+          <div className="text-[18px] sm:text-[19px] font-display font-bold text-white tracking-tight leading-snug whitespace-nowrap">
             {proxyCardTitle}
           </div>
           <div className="text-slate-400 text-xs leading-tight font-sans mt-0.5">
@@ -500,7 +500,7 @@ export default function SecurityOverview({ onNavigate }) {
               {stackCardBadge}
             </span>
           </div>
-          <div className="text-[20px] sm:text-[22px] font-display font-bold text-white tracking-tight leading-snug whitespace-nowrap">
+          <div className="text-[18px] sm:text-[19px] font-display font-bold text-white tracking-tight leading-snug whitespace-nowrap">
             {stackCardTitle}
           </div>
           <div className="text-slate-400 text-xs leading-tight font-mono mt-0.5 break-words">
