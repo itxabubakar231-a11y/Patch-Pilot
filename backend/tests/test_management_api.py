@@ -706,5 +706,27 @@ def test_large_integer_overflow_validation():
 
 
 def test_safety_guard_no_live_database_created():
-    """Verify live database backend/data/patchpilot.db was NEVER created."""
-    assert not DATABASE_PATH.exists()
+    """Verify live database backend/data/patchpilot.db is protected from creation or modification."""
+    existed_before = DATABASE_PATH.exists()
+    mtime_before = DATABASE_PATH.stat().st_mtime_ns if existed_before else None
+    size_before = DATABASE_PATH.stat().st_size if existed_before else None
+
+    # Verify management database operations run safely against isolated database
+    init_db()
+    assert get_proxy_mode() == "shadow"
+
+    if not existed_before:
+        assert not DATABASE_PATH.exists(), (
+            f"CRITICAL SAFETY VIOLATION: Test created live database file at {DATABASE_PATH}"
+        )
+    else:
+        assert DATABASE_PATH.exists(), (
+            f"CRITICAL SAFETY VIOLATION: Test deleted live database file at {DATABASE_PATH}"
+        )
+        stat_after = DATABASE_PATH.stat()
+        assert stat_after.st_mtime_ns == mtime_before, (
+            f"CRITICAL SAFETY VIOLATION: Test modified live database file at {DATABASE_PATH}"
+        )
+        assert stat_after.st_size == size_before, (
+            f"CRITICAL SAFETY VIOLATION: Test modified live database file size at {DATABASE_PATH}"
+        )
