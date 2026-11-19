@@ -263,8 +263,8 @@ export default function AppShell({ activeTab = 'overview', onTabChange, onAuthCh
         className="flex-1 flex flex-col"
       >
         {/* Top Header Navigation (z-30) - Compact 64px height */}
-        <header className="h-16 border-b border-emerald-500/15 bg-[#060B08]/90 backdrop-blur-xl sticky top-0 z-30 px-3 sm:px-6 flex items-center transition-colors">
-          <div className="w-full flex items-center justify-between gap-2 sm:gap-4 min-w-0">
+        <header className="h-16 border-b border-emerald-500/15 bg-[#060B08]/90 backdrop-blur-xl sticky top-0 z-30 px-3 sm:px-4 lg:px-6 flex items-center transition-colors">
+          <div className="w-full flex items-center justify-between gap-2 sm:gap-3 lg:gap-4 min-w-0">
             {/* Brand & Active Section Breadcrumb */}
             <div className="flex items-center space-x-1.5 sm:space-x-3 shrink-0 min-w-0">
               <button
@@ -287,8 +287,8 @@ export default function AppShell({ activeTab = 'overview', onTabChange, onAuthCh
                   PatchPilot
                 </span>
 
-                {/* Version badge - hidden on mobile < 640px */}
-                <span className="hidden sm:inline text-[10px] px-2 py-0.5 rounded bg-[#0B1512] text-slate-400 font-mono border border-emerald-500/20 shrink-0">
+                {/* Version badge - hidden on mobile & compact zoom < 768px */}
+                <span className="hidden md:inline text-[10px] px-2 py-0.5 rounded bg-[#0B1512] text-slate-400 font-mono border border-emerald-500/20 shrink-0">
                   v0.1.0-alpha
                 </span>
 
@@ -300,14 +300,14 @@ export default function AppShell({ activeTab = 'overview', onTabChange, onAuthCh
             </div>
 
             {/* Right Header Badges and Controls */}
-            <div className="flex items-center space-x-1.5 sm:space-x-3 shrink-0">
-              {/* Mode-Aware Environment Pill - compact on mobile */}
+            <div className="flex items-center space-x-1.5 sm:space-x-2 lg:space-x-3 shrink-0">
+              {/* Mode-Aware Environment Pill - compact on mobile and 200% zoom */}
               <span className="inline-flex items-center space-x-1 sm:space-x-1.5 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-mono font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shrink-0">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-                <span className="hidden sm:inline">
+                <span className="hidden lg:inline">
                   {getApiMode() === 'real' ? 'Local Lab / API Transport Mode' : 'Local Lab / Simulated Environment'}
                 </span>
-                <span className="sm:hidden">
+                <span className="lg:hidden">
                   {getApiMode() === 'real' ? 'API Mode' : 'Simulated'}
                 </span>
               </span>

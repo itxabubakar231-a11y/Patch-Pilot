@@ -17,7 +17,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { getOverview, getApiMode } from '../../services/apiClient.js'
+import { getOverview, getApiMode, subscribeAuthChange } from '../../services/apiClient.js'
 import OverviewOrbPreview from './OverviewOrbPreview.jsx'
 import {
   IconRefresh,
@@ -103,15 +103,31 @@ export default function SecurityOverview({ onNavigate }) {
 
   useEffect(() => {
     isMountedRef.current = true
-    fetchOverview(false)
+    let intervalId = null
 
-    const intervalId = setInterval(() => {
-      fetchOverview(false)
-    }, 5000)
+    const schedulePoll = () => {
+      if (intervalId) clearInterval(intervalId)
+      intervalId = setInterval(() => {
+        fetchOverview(false)
+      }, 5000)
+    }
+
+    // Initial mount fetch and poll schedule
+    fetchOverview(false)
+    schedulePoll()
+
+    // Immediately refresh on admin unlock and reset poll schedule to prevent duplicate requests
+    const unsubscribe = subscribeAuthChange((isUnlocked) => {
+      if (isUnlocked) {
+        fetchOverview(false)
+        schedulePoll()
+      }
+    })
 
     return () => {
       isMountedRef.current = false
-      clearInterval(intervalId)
+      if (intervalId) clearInterval(intervalId)
+      unsubscribe()
       if (metricHighlightTimerRef.current) {
         clearTimeout(metricHighlightTimerRef.current)
         metricHighlightTimerRef.current = null
