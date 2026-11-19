@@ -41,30 +41,60 @@ class DummyTargetHandler(BaseHTTPRequestHandler):
 
         # Default simulated target homepage
         self._set_headers(content_type="text/html")
-        html_content = """<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>PatchPilot Isolated Lab Target</title>
-    <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 40px; background: #0f172a; color: #f8fafc; }
-        .card { background: #1e293b; border-radius: 8px; padding: 24px; max-width: 600px; border: 1px solid #334155; }
-        .tag { display: inline-block; background: #0284c7; color: white; padding: 4px 10px; border-radius: 9999px; font-size: 12px; font-weight: bold; }
-        h1 { margin-top: 12px; font-size: 22px; }
-        pre { background: #020617; padding: 12px; border-radius: 4px; overflow-x: auto; color: #38bdf8; font-size: 13px; }
-    </style>
-</head>
-<body>
-    <div class="card">
-        <span class="tag">ISOLATED LAB TARGET</span>
-        <h1>Dummy PHP Web Server</h1>
-        <p>This is a safe, dummy local HTTP service running inside the PatchPilot lab folder.</p>
-        <p>Simulated Environment: <strong>PHP 8.2 / Apache 2.4</strong></p>
-        <pre>GET /health -> Returns target health JSON</pre>
-    </div>
-</body>
-</html>"""
+        html_content = (
+            "<!DOCTYPE html>\n"
+            "<html lang=\"en\">\n"
+            "<head>\n"
+            "    <meta charset=\"UTF-8\">\n"
+            "    <title>PatchPilot Isolated Lab Target</title>\n"
+            "    <style>\n"
+            "        body { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; margin: 40px; background: #0f172a; color: #f8fafc; }\n"
+            "        .card { background: #1e293b; border-radius: 8px; padding: 24px; max-width: 600px; border: 1px solid #334155; }\n"
+            "        .tag { display: inline-block; background: #0284c7; color: white; padding: 4px 10px; border-radius: 9999px; font-size: 12px; font-weight: bold; }\n"
+            "        h1 { margin-top: 12px; font-size: 22px; }\n"
+            "        pre { background: #020617; padding: 12px; border-radius: 4px; overflow-x: auto; color: #38bdf8; font-size: 13px; }\n"
+            "    </style>\n"
+            "</head>\n"
+            "<body>\n"
+            "    <div class=\"card\">\n"
+            "        <span class=\"tag\">ISOLATED LAB TARGET</span>\n"
+            "        <h1>Dummy PHP Web Server</h1>\n"
+            "        <p>This is a safe, dummy local HTTP service running inside the PatchPilot lab folder.</p>\n"
+            "        <p>Simulated Environment: <strong>PHP 8.2 / Apache 2.4</strong></p>\n"
+            "        <pre>GET /health -&gt; Returns target health JSON</pre>\n"
+            "    </div>\n"
+            "</body>\n"
+            "</html>"
+        )
         self.wfile.write(html_content.encode("utf-8"))
+
+    def do_POST(self):
+        timestamp = time.strftime("[%Y-%m-%d %H:%M:%S]")
+        print(f"{timestamp} Incoming POST request: {self.path} from {self.client_address[0]}")
+
+        # Safely determine request body length from Content-Length header
+        try:
+            content_length = int(self.headers.get("Content-Length", 0))
+        except (ValueError, TypeError):
+            content_length = 0
+
+        # Safely read raw body bytes without executing or interpreting content
+        if content_length > 0:
+            body = self.rfile.read(content_length)
+            received_body_length = len(body)
+        else:
+            received_body_length = 0
+
+        # Return a simple JSON response confirming receipt
+        self._set_headers(content_type="application/json", status_code=200)
+        response = {
+            "status": "ok",
+            "message": "POST request received by PatchPilot Lab Target Server",
+            "path": self.path,
+            "received_body_length": received_body_length,
+            "simulated_stack": "Apache/2.4.52 + PHP/8.2.0"
+        }
+        self.wfile.write(json.dumps(response, indent=2).encode("utf-8"))
 
     def log_message(self, format, *args):
         # Format custom log line
@@ -89,4 +119,3 @@ def run(host=HOST, port=PORT):
 
 if __name__ == "__main__":
     run()
-
