@@ -13,7 +13,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
-import { getTraffic, getApiMode } from '../../services/apiClient.js'
+import { getTraffic, getApiMode, subscribeAuthChange } from '../../services/apiClient.js'
 import {
   IconRefresh,
   IconSearch,
@@ -82,16 +82,31 @@ export default function TrafficMonitor() {
 
   useEffect(() => {
     isMountedRef.current = true
-    fetchTraffic(false)
+    let intervalId = null
 
-    // 5-second automatic polling
-    const intervalId = setInterval(() => {
-      fetchTraffic(false)
-    }, 5000)
+    const schedulePoll = () => {
+      if (intervalId) clearInterval(intervalId)
+      intervalId = setInterval(() => {
+        fetchTraffic(false)
+      }, 5000)
+    }
+
+    // Initial mount fetch and poll schedule
+    fetchTraffic(false)
+    schedulePoll()
+
+    // Immediately refresh on admin unlock and reset poll schedule to prevent duplicate requests
+    const unsubscribe = subscribeAuthChange((isUnlocked) => {
+      if (isUnlocked) {
+        fetchTraffic(false)
+        schedulePoll()
+      }
+    })
 
     return () => {
       isMountedRef.current = false
-      clearInterval(intervalId)
+      if (intervalId) clearInterval(intervalId)
+      unsubscribe()
     }
   }, [fetchTraffic])
 
