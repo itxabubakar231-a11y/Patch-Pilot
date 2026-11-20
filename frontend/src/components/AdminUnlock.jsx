@@ -101,8 +101,8 @@ export default function AdminUnlock({ onAuthChange }) {
         <div className="inline-flex items-center space-x-1.5 sm:space-x-2 shrink-0">
           <span className="inline-flex items-center space-x-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md text-[10px] sm:text-[11px] font-mono font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/25">
             <IconCheckCircle className="w-3 h-3 text-emerald-400 shrink-0" />
-            <span className="hidden sm:inline">UNLOCKED</span>
-            <span className="sm:hidden">ADMIN</span>
+            <span className="hidden md:inline">UNLOCKED</span>
+            <span className="md:hidden">ADMIN</span>
           </span>
           <button
             type="button"
@@ -120,8 +120,8 @@ export default function AdminUnlock({ onAuthChange }) {
           className="inline-flex items-center space-x-1 sm:space-x-1.5 px-2 py-1 sm:px-3 sm:py-1 rounded-md text-[11px] sm:text-xs font-medium bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/40 shrink-0"
         >
           <IconLock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-          <span className="hidden sm:inline">Unlock Admin</span>
-          <span className="sm:hidden">Unlock</span>
+          <span className="hidden md:inline">Unlock Admin</span>
+          <span className="md:hidden">Unlock</span>
         </button>
       )}
 

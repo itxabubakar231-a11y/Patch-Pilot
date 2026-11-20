@@ -60,7 +60,7 @@ function NavItem({ item, isActive, onClick, isMobile = false }) {
       onClick={onClick}
       aria-current={isActive ? 'page' : undefined}
       className={`group relative w-full flex items-center justify-between text-left rounded-xl transition-all duration-200 ease-out outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 active:scale-[0.99] ${
-        isMobile ? 'px-3 py-2.5 text-sm' : 'px-3.5 py-2 text-[13px]'
+        isMobile ? 'px-3 py-2 text-sm font-medium' : 'px-3 py-2 text-[13.5px] lg:text-[14px] font-medium'
       } ${
         isActive
           ? 'bg-[#0B2117] text-white font-semibold border border-emerald-500/70 shadow-[0_0_12px_rgba(16,185,129,0.25)]'
@@ -75,22 +75,22 @@ function NavItem({ item, isActive, onClick, isMobile = false }) {
         />
       )}
 
-      {/* Item Icon and Label */}
-      <div className={`flex items-center space-x-2.5 min-w-0 ${isActive ? 'pl-2' : ''} transition-all duration-150`}>
+      {/* Item Icon and Label - No awkward truncation */}
+      <div className={`flex items-center space-x-2 shrink-0 ${isActive ? 'pl-1.5' : ''} transition-all duration-150`}>
         <span className={`shrink-0 transition-colors duration-200 ${isActive ? 'text-emerald-400' : 'text-slate-400 group-hover:text-emerald-300'}`}>
           <IconComponent className="w-4 h-4" />
         </span>
-        <span className="truncate tracking-normal">{item.label}</span>
+        <span className="whitespace-nowrap tracking-normal">{item.label}</span>
       </div>
 
       {/* Right Badge / Status Pill */}
       {item.isPhase2 ? (
-        <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/25 shrink-0">
+        <span className="text-[9.5px] font-mono uppercase px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/25 shrink-0 ml-1.5">
           Phase 2
         </span>
       ) : (
         <span
-          className={`text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 transition-all duration-200 ${
+          className={`text-[9.5px] font-mono px-1.5 py-0.5 rounded-full shrink-0 ml-1.5 transition-all duration-200 ${
             isActive
               ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-medium'
               : 'text-slate-400 bg-white/[0.03] border border-white/[0.08] group-hover:text-slate-200 group-hover:border-emerald-500/30'
@@ -262,9 +262,9 @@ export default function AppShell({ activeTab = 'overview', onTabChange, onAuthCh
         aria-hidden={mobileMenuOpen ? 'true' : undefined}
         className="flex-1 flex flex-col"
       >
-        {/* Top Header Navigation (z-30) - EXACT 72px height matching reference */}
-        <header className="h-[72px] border-b border-emerald-500/15 bg-[#060B08]/90 backdrop-blur-xl sticky top-0 z-30 px-3 sm:px-6 flex items-center transition-colors">
-          <div className="w-full flex items-center justify-between gap-2 sm:gap-4 min-w-0">
+        {/* Top Header Navigation (z-30) - Compact 64px height */}
+        <header className="h-16 border-b border-emerald-500/15 bg-[#060B08]/90 backdrop-blur-xl sticky top-0 z-30 px-3 sm:px-4 lg:px-6 flex items-center transition-colors">
+          <div className="w-full flex items-center justify-between gap-2 sm:gap-3 lg:gap-4 min-w-0">
             {/* Brand & Active Section Breadcrumb */}
             <div className="flex items-center space-x-1.5 sm:space-x-3 shrink-0 min-w-0">
               <button
@@ -283,37 +283,37 @@ export default function AppShell({ activeTab = 'overview', onTabChange, onAuthCh
               </div>
 
               <div className="flex items-center space-x-2 min-w-0">
-                <span className="font-bold text-sm sm:text-base tracking-tight text-white shrink-0">
+                <span className="font-display font-bold text-sm sm:text-base tracking-tight text-white shrink-0">
                   PatchPilot
                 </span>
 
-                {/* Version badge - hidden on mobile < 640px */}
-                <span className="hidden sm:inline text-[10px] px-2 py-0.5 rounded bg-[#0B1512] text-slate-400 font-mono border border-emerald-500/20 shrink-0">
+                {/* Version badge - hidden on mobile & compact zoom < 768px */}
+                <span className="hidden md:inline text-[10px] px-2 py-0.5 rounded bg-[#0B1512] text-slate-400 font-mono border border-emerald-500/20 shrink-0">
                   v0.1.0-alpha
                 </span>
 
                 {/* Active Section Breadcrumb */}
-                <span className="text-xs font-medium text-slate-300 hidden md:inline ml-1 shrink-0">
+                <span className="text-xs font-mono font-medium text-emerald-400/90 hidden md:inline ml-1 shrink-0">
                   {activeItem.zone || 'Zone 1'}
                 </span>
               </div>
             </div>
 
             {/* Right Header Badges and Controls */}
-            <div className="flex items-center space-x-1.5 sm:space-x-3 shrink-0">
-              {/* Mode-Aware Environment Pill - compact on mobile */}
-              <span className="inline-flex items-center space-x-1 sm:space-x-1.5 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shrink-0">
+            <div className="flex items-center space-x-1.5 sm:space-x-2 lg:space-x-3 shrink-0">
+              {/* Mode-Aware Environment Pill - compact on mobile and 200% zoom */}
+              <span className="inline-flex items-center space-x-1 sm:space-x-1.5 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-mono font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shrink-0">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-                <span className="hidden sm:inline">
+                <span className="hidden lg:inline">
                   {getApiMode() === 'real' ? 'Local Lab / API Transport Mode' : 'Local Lab / Simulated Environment'}
                 </span>
-                <span className="sm:hidden">
+                <span className="lg:hidden">
                   {getApiMode() === 'real' ? 'API Mode' : 'Simulated'}
                 </span>
               </span>
 
               {/* Loopback prototype notice */}
-              <span className="text-xs text-slate-400 hidden 2xl:inline">
+              <span className="text-xs text-slate-400 hidden 2xl:inline font-sans">
                 Defensive prototype bound to loopback (127.0.0.1). Not a production WAF.
               </span>
 
@@ -336,12 +336,12 @@ export default function AppShell({ activeTab = 'overview', onTabChange, onAuthCh
 
         {/* 3. Main Body: Edge-to-edge layout matching reference geometry */}
         <div className="flex-1 w-full flex flex-col lg:flex-row relative">
-          {/* Desktop Sidebar: EXACT 335px width matching reference */}
-          <aside className="w-full lg:w-[335px] border-b lg:border-b-0 lg:border-r border-emerald-500/15 bg-[#060E11]/90 p-5 shrink-0 hidden lg:flex flex-col justify-between backdrop-blur-sm min-h-[calc(100vh-72px)]">
-            <div className="space-y-6">
+          {/* Desktop Sidebar: Balanced width for improved information density */}
+          <aside className="w-full lg:w-[270px] xl:w-[280px] border-b lg:border-b-0 lg:border-r border-emerald-500/15 bg-[#060E11]/90 p-3 sm:p-3.5 shrink-0 hidden lg:flex flex-col justify-between backdrop-blur-sm min-h-[calc(100vh-64px)]">
+            <div className="space-y-4">
               <div className="space-y-1">
-                <div className="px-2 pb-1.5">
-                  <span className="text-[11px] font-bold text-slate-400 tracking-wider uppercase">
+                <div className="px-2 pb-1">
+                  <span className="text-[11px] font-mono font-semibold text-slate-400 tracking-wider uppercase">
                     Command Center
                   </span>
                 </div>
@@ -358,8 +358,8 @@ export default function AppShell({ activeTab = 'overview', onTabChange, onAuthCh
               </div>
 
               <div className="space-y-1">
-                <div className="px-2 pb-1.5">
-                  <span className="text-[11px] font-bold text-slate-400 tracking-wider uppercase">
+                <div className="px-2 pb-1">
+                  <span className="text-[11px] font-mono font-semibold text-slate-400 tracking-wider uppercase">
                     Phase 2
                   </span>
                 </div>
@@ -377,12 +377,12 @@ export default function AppShell({ activeTab = 'overview', onTabChange, onAuthCh
             </div>
 
             {/* Defensive Scope Card in Sidebar */}
-            <div className="p-3.5 rounded-xl border border-emerald-500/20 bg-[#07130F] text-slate-300 text-[11px] space-y-2 mt-auto">
-              <div className="font-semibold text-slate-200 text-xs flex items-center space-x-1.5">
+            <div className="p-3 rounded-xl border border-emerald-500/20 bg-[#07130F] text-slate-300 text-[11px] space-y-1.5 mt-auto">
+              <div className="font-display font-semibold text-slate-200 text-xs flex items-center space-x-1.5">
                 <IconInfo className="w-3.5 h-3.5 text-emerald-400" />
                 <span>Defensive Scope</span>
               </div>
-              <ul className="space-y-1.5 text-slate-300 text-[11px]">
+              <ul className="space-y-1 text-slate-300 text-[11px]">
                 <li className="flex items-center space-x-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
                   <span>Target: <code className="text-emerald-300 font-mono">127.0.0.1:8081</code></span>
