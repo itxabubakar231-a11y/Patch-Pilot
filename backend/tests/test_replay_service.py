@@ -43,11 +43,28 @@ from app.services.replay_service import (
 
 @pytest.fixture(autouse=True)
 def guard_live_database():
-    """Safety guard ensuring tests never create or touch backend/data/patchpilot.db."""
+    """Safety guard ensuring tests never create, delete, or modify backend/data/patchpilot.db."""
+    existed_before = DATABASE_PATH.exists()
+    mtime_before = DATABASE_PATH.stat().st_mtime_ns if existed_before else None
+    size_before = DATABASE_PATH.stat().st_size if existed_before else None
+
     yield
-    assert not DATABASE_PATH.exists(), (
-        f"CRITICAL: Test touched or created live database file at {DATABASE_PATH}"
-    )
+
+    if not existed_before:
+        assert not DATABASE_PATH.exists(), (
+            f"CRITICAL: Test created live database file at {DATABASE_PATH}"
+        )
+    else:
+        assert DATABASE_PATH.exists(), (
+            f"CRITICAL: Test deleted live database file at {DATABASE_PATH}"
+        )
+        stat_after = DATABASE_PATH.stat()
+        assert stat_after.st_mtime_ns == mtime_before, (
+            f"CRITICAL: Test modified live database file at {DATABASE_PATH}"
+        )
+        assert stat_after.st_size == size_before, (
+            f"CRITICAL: Test modified live database file size at {DATABASE_PATH}"
+        )
 
 
 @pytest.fixture
