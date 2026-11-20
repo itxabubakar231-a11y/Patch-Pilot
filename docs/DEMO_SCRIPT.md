@@ -21,6 +21,18 @@ This script provides an exact, step-by-step walkthrough demonstrating PatchPilot
 
 ---
 
+> [!IMPORTANT]
+> **Before the Demo (Preparation & Setup):**
+> * **Reset local database:** Stop all running services (`Ctrl + C`) and delete the local database directory:
+>   ```powershell
+>   Remove-Item -Recurse -Force backend\data
+>   ```
+>   This ensures that Rule #1 starts in the initial `Replay Required` state and ENFORCE mode starts locked (`GATED (REPLAY REQUIRED)`).
+> * **Dashboard authentication:** In real mode (`VITE_DATA_MODE=real`), open the unlock modal, type your configured admin token (`<YOUR_ADMIN_TOKEN>`), and click **Unlock**. Do **NOT** use the **Quick Demo Unlock** button—that button is intended exclusively for the simulated mock dashboard.
+> * **UI polling refresh:** Wait about 5 seconds after each request for the dashboard to refresh (the frontend uses a 5-second automatic polling interval).
+
+---
+
 ## 🖥️ Terminal Layout Setup
 
 Open **five separate Windows PowerShell terminals** positioned side-by-side:
@@ -66,7 +78,7 @@ uvicorn app.proxy_app:app --host 127.0.0.1 --port 8080 --no-access-log
   INFO:patchpilot.proxy_app:Starting PatchPilot Security Proxy on http://127.0.0.1:8080
   INFO:     Uvicorn running on http://127.0.0.1:8080 (Press CTRL+C to quit)
   ```
-* **Speaker Note:** *"We run uvicorn with `--no-access-log` because default ASGI access logging dumps raw query strings to the terminal. To uphold strict privacy, our proxy intercepts and strips query parameters, logging only sanitized HTTP methods and paths."*
+* **Speaker Note:** *"We run uvicorn with `--no-access-log` because default ASGI access logging dumps raw query strings to the terminal. To uphold strict privacy, our proxy never logs or stores query strings; it records only the method and the sanitized path."*
 
 ---
 
@@ -104,15 +116,16 @@ npm run dev
 ### Browser Action — Authenticate on the Dashboard
 1. Open `http://127.0.0.1:5173/` in Google Chrome or Microsoft Edge.
 2. Observe the top header badge: it shows `Transport: API (127.0.0.1:8000)`.
-3. Click the amber **Unlock Admin** button in the top navigation bar.
+3. Click the **Unlock Admin** button in the top navigation bar.
 4. In the dialog, enter the admin token configured in Terminal 3:
    ```text
    <YOUR_ADMIN_TOKEN>
    ```
-5. Click **Unlock**.
+5. Click **Unlock** (do not click the **Quick Demo Unlock** button, which is for mock mode).
 * **Expected Result:**
-  * The modal closes and the button transitions to a green `UNLOCKED` status badge with a `Lock` button.
-  * Zone 1 (Security Overview) connects to SQLite and displays live telemetry with green provenance badges (`Data: Live Backend`).
+  * The modal closes and the button transitions to the `UNLOCKED` status badge with a `Lock` button.
+  * Zone 1 (Security Overview) connects to SQLite and displays live telemetry.
+  * In Zone 2 (Traffic Monitor), the data source indicator updates to `Data: Live Backend`.
 * **Speaker Note:** *"Notice that the token is stored strictly in React memory—never in `localStorage`, cookies, or browser URLs. Refreshing the browser or clicking 'Lock' immediately purges the credential."*
 
 ---
@@ -168,11 +181,12 @@ Before entering Enforce mode, PatchPilot requires automated regression evaluatio
    curl.exe -X POST -H "Authorization: Bearer <YOUR_ADMIN_TOKEN>" http://127.0.0.1:8000/api/v1/rules/1/replay
    ```
 * **Expected Result:**
-  * The test completes and displays results evaluated against `lab/fixtures/lab_v1.json`:
+  * The dashboard rules table updates the status badge to `Passed (Gate Ready)`.
+  * The evaluation numbers come from the API response of `POST /api/v1/rules/1/replay`; the Terminal 5 curl output displays the results:
     * **Benign Fixtures:** 7 total, 0 matched
     * **Marker Fixtures:** 3 total, 3 matched
     * **Verdict:** `PASSED` (`passed: true`)
-  * The rule row status badge updates to green: `Passed (Gate Ready)`.
+    *(Confirm during rehearsal if the dashboard also surfaces these numbers).*
   * The **ENFORCE** mode button card becomes active and ready to engage.
 * **Speaker Note:** *"On the lab-v1 fixtures: 0 of 7 benign requests matched and 3 of 3 marker requests matched; the replay is a regression check on a small fixture set, not proof of safety. The replay run record stores the rule's SHA-256 config digest in SQLite, so any configuration change invalidates prior replay results and re-locks the gate."*
 
@@ -188,7 +202,7 @@ With the replay gate satisfied, active enforcement can be safely engaged.
    with warning details and a confirmation button:
    `Confirm ENFORCE`
 3. Click **Confirm ENFORCE**.
-4. The proxy mode pill updates to red: `ENFORCE`.
+4. The proxy mode pill updates to `ENFORCE`.
 
 ### In Terminal 5 (Client), verify that normal traffic still passes:
 ```powershell
@@ -213,7 +227,7 @@ curl.exe -i "http://127.0.0.1:8080/?demo_attack=true"
       }
     }
     ```
-  * In Terminal 1 (Lab), notice that **no log entry appears**. The proxy terminated the connection immediately without calling the upstream target.
+  * In Terminal 1 (Lab), notice that **no log entry appears**. The proxy returned the 403 itself and never called the upstream lab.
 
 ### In Terminal 5 (Client), test query delimiter handling:
 Send the marker followed by an additional query parameter containing a trailing question mark:
@@ -362,9 +376,9 @@ Capture these specific screenshots during the rehearsal or presentation for docu
 
 | # | Item to Capture | Screen / Terminal | Key Visual Indicator to Verify |
 |---|---|---|---|
-| **E1** | Admin Authentication | Browser (Top Nav) | Green `UNLOCKED` pill and `Transport: API (127.0.0.1:8000)` badge. |
+| **E1** | Admin Authentication | Browser (Top Nav) | `UNLOCKED` status badge and `Transport: API (127.0.0.1:8000)` badge. |
 | **E2** | Shadow Mode Telemetry | Zone 2 (Traffic Monitor) | Action badges `Allowed` and `Shadow Match`; metric cards `events`, `forwarded`, `matches`, `intercepts`. |
-| **E3** | Replay Evaluation Proof | Zone 3 (Shield Controls) | Button `Run Replay Test` flips status badge to `Passed (Gate Ready)`; 0 of 7 benign, 3 of 3 attack fixtures matched. |
+| **E3** | Replay Evaluation Proof | Zone 3 (Shield Controls) & Terminal 5 | Status badge shows `Passed (Gate Ready)` in Zone 3; Terminal 5 curl API response displays evaluation numbers (7 benign / 0 matched, 3 marker / 3 matched; confirm during rehearsal if dashboard also surfaces numbers). |
 | **E4** | Enforce Blocking in Action | Terminal 5 (curl) | Terminal output showing `HTTP/1.1 403 Forbidden` and `REQUEST_BLOCKED` JSON envelope. |
 | **E5** | Trailing Delimiter Handling | Terminal 5 (curl) | `curl.exe -i "http://127.0.0.1:8080/?demo_attack=true&z=?"` returning HTTP 403. |
 | **E6** | Instant Rollback | Zone 3 (Shield Controls) | Amber button `Rollback to Shadow`, modal `Confirm Emergency Rollback` -> `Confirm Rollback`, feedback `Operation Completed: Enforcement disabled; shadow logging continues.`. |

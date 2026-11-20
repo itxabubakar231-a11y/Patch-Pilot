@@ -165,12 +165,12 @@ cd <repo-root>\frontend
 $env:VITE_DATA_MODE = "real"
 npm run dev
 ```
-Open `http://127.0.0.1:5173/` in your browser. Click **Unlock Admin** in the top navigation and enter your configured admin token (`<YOUR_ADMIN_TOKEN>`).
+Open `http://127.0.0.1:5173/` in your browser. Click **Unlock Admin** in the top navigation, enter your configured admin token (`<YOUR_ADMIN_TOKEN>`), and click **Unlock**. Do not use the **Quick Demo Unlock** button, which is intended only for testing the simulated mock dashboard.
 
 > [!TIP]
 > **Mock vs. Real Mode:**
-> * `VITE_DATA_MODE="mock"` (default): Uses in-memory offline mock fixtures. The UI displays `Data: Mock Fixture` and banner `VITE_DATA_MODE=mock`. No network requests are sent to port 8000.
-> * `VITE_DATA_MODE="real"`: Connects directly through Vite's dev proxy to the FastAPI backend on `127.0.0.1:8000`. The UI displays `Transport: API (127.0.0.1:8000)` and `Data: Live Backend` with verified SQLite live telemetry.
+> * `VITE_DATA_MODE="mock"` (default): Runs offline against in-memory mock fixtures without contacting port 8000. The interface displays `Data: Mock Fixture`.
+> * `VITE_DATA_MODE="real"`: Connects through Vite's dev proxy to the FastAPI backend on `127.0.0.1:8000`. The header displays `Transport: API (127.0.0.1:8000)` and Zone 2 displays `Data: Live Backend` with verified SQLite live telemetry.
 
 #### Terminal 5 — Test & Demonstration Client
 Use this terminal to send test traffic through the proxy and management API:
