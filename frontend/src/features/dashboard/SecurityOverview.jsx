@@ -11,7 +11,7 @@
  * - Honest button labels: "Refresh Overview" (fetchOverview) and "Open AI Advisories" (navigates to Zone 4).
  * - Dynamic proxy node subtitle reflecting active proxy mode without falsely claiming actual enforcement in mock mode.
  * - AI Intelligence card reflects actual advisory intelligence state without falsely attributing proxy shadow matches.
- * - Honest Lab status: distinguishes verified online from simulated mock and unverified offline.
+ * - Honest Lab status: distinguishes live lab online, offline, and unknown from simulated mock.
  * - Prominent emerald topology directional arrows and separate out-of-band management node.
  * - Full SVG outline icons (0 emojis).
  */
@@ -238,11 +238,8 @@ export default function SecurityOverview({ onNavigate }) {
   }
 
   // Card 3 Upstream Stack details - strictly source-backed, zero fabricated fallback
-  // In real mode, prioritize verified live stack fields over simulated_stack
-  const verifiedLiveStack = Boolean(isLiveConnected && lab?.verified) ? (lab?.live_stack || lab?.runtime_stack || lab?.stack || null) : null
-  const sourceStack = isMockMode
-    ? (lab?.simulated_stack || lab?.stack || null)
-    : (verifiedLiveStack || lab?.stack || lab?.live_stack || lab?.simulated_stack || null)
+  // Simulated Apache/PHP stack labeling: successful lab probe does not claim real PHP runtime verification
+  const sourceStack = lab?.simulated_stack || lab?.stack || null
   const upstreamTarget = lab?.upstream || null
 
   let stackCardTitle = 'Stack Unavailable'
@@ -257,22 +254,47 @@ export default function SecurityOverview({ onNavigate }) {
     } else {
       stackCardTitle = sourceStack.split('+')[0].trim() || 'PHP Stack'
     }
-    const isLiveObserved = Boolean(isLiveConnected && lab?.verified && verifiedLiveStack)
-    stackCardDesc = isLiveObserved ? `Observed: ${sourceStack}` : `Target Spec: ${sourceStack}`
-    stackCardBadge = isMockMode ? 'Mock Spec' : (isLiveObserved ? 'Live Stack' : 'Spec')
+    stackCardDesc = `Target Spec: ${sourceStack}`
+    stackCardBadge = isMockMode ? 'Mock Spec' : 'Spec'
   } else if (upstreamTarget) {
     stackCardTitle = 'Upstream Lab'
     stackCardDesc = `Target: ${upstreamTarget}`
     stackCardBadge = isMockMode ? 'Mock Target' : 'Target'
   }
 
-  // Lab online status verification: only claim online when verified
-  const isLabVerifiedOnline = Boolean(isLiveConnected && lab?.status === 'online' && lab?.verified)
-  const labStatusLabel = isLabVerifiedOnline
-    ? 'Local Lab (Online)'
-    : isMockMode
-    ? 'Simulated Lab (Mock)'
-    : 'Lab Unverified'
+  // Lab availability status and indicator colors based on API contract docs/API.md
+  // States:
+  // - Mock Mode: 'Simulated Lab (Mock)' with cyan indicator
+  // - Real Mode (management API disconnected): 'Lab Unknown' with amber indicator
+  // - Real Mode (online): 'Local Lab (Online)' with emerald indicator
+  // - Real Mode (offline): 'Lab Offline' with rose indicator
+  // - Real Mode (unknown / missing): 'Lab Unknown' with amber indicator
+  const rawLabStatus = lab?.status ? String(lab.status).toLowerCase().trim() : null
+  let labStatusLabel = 'Lab Unknown'
+  let labStatusBadgeClass = 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+  let labStatusDotClass = 'bg-amber-400'
+
+  if (isMockMode) {
+    labStatusLabel = 'Simulated Lab (Mock)'
+    labStatusBadgeClass = 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400'
+    labStatusDotClass = 'bg-cyan-400'
+  } else if (!isLiveConnected) {
+    labStatusLabel = 'Lab Unknown'
+    labStatusBadgeClass = 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+    labStatusDotClass = 'bg-amber-400'
+  } else if (rawLabStatus === 'online') {
+    labStatusLabel = 'Local Lab (Online)'
+    labStatusBadgeClass = 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+    labStatusDotClass = 'bg-emerald-400'
+  } else if (rawLabStatus === 'offline') {
+    labStatusLabel = 'Lab Offline'
+    labStatusBadgeClass = 'bg-rose-500/10 border-rose-500/30 text-rose-400'
+    labStatusDotClass = 'bg-rose-400'
+  } else {
+    labStatusLabel = 'Lab Unknown'
+    labStatusBadgeClass = 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+    labStatusDotClass = 'bg-amber-400'
+  }
 
   // Dynamic Proxy Node Subtitle in Topology (distinguishes simulation from live enforcement)
   const proxyNodeSubtitle = !proxyMode
@@ -573,8 +595,8 @@ export default function SecurityOverview({ onNavigate }) {
           </div>
 
           <div className="flex items-center space-x-2">
-            <span className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            <span className={`inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full ${labStatusBadgeClass} border text-xs font-mono font-medium`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${labStatusDotClass}`} />
               <span>{labStatusLabel}</span>
             </span>
             <span className="text-xs font-mono text-slate-300 bg-white/[0.04] border border-white/[0.08] px-2.5 py-1 rounded-md">
