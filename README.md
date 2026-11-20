@@ -19,7 +19,7 @@ PatchPilot/
 │   ├── app/
 │   │   ├── api/              # Management routers (proxy, traffic, advisories)
 │   │   ├── core/             # Auth, loopback configuration, SQLite DAL
-│   │   ├── fixtures/         # Local benchmark advisory fixtures
+│   │   ├── fixtures/         # Advisory fixtures & mirrored replay fixture (backend/app/fixtures/replay/lab_v1.json)
 │   │   ├── schemas/          # Pydantic request/response models
 │   │   ├── services/         # Proxy forwarding, rule engine, replay gate, advisory analyzer
 │   │   ├── main.py           # Management API service (port 8000)
@@ -41,7 +41,7 @@ PatchPilot/
 │   ├── server.py             # Minimal Python HTTP dummy target (port 8081)
 │   ├── index.php             # Inert PHP code artifact (not a running runtime)
 │   └── fixtures/
-│       └── lab_v1.json       # Harmless replay test fixture dataset (7 benign, 3 marker)
+│       └── lab_v1.json       # Canonical replay fixture dataset (7 benign, 3 marker; read by replay service)
 ├── docs/                     # Authoritative design, API, and architectural contracts
 │   ├── API.md                # Source-of-truth API specification
 │   ├── ARCHITECTURE.md       # Component architecture and boundaries
@@ -50,6 +50,9 @@ PatchPilot/
 │   └── DEVELOPMENT_PLAN.md   # Sprint roadmap and acceptance criteria
 └── README.md
 ```
+
+> [!NOTE]
+> **Replay Fixture Locations:** The replay service (`backend/app/services/replay_service.py`) reads strictly from `lab/fixtures/lab_v1.json` as the canonical fixture path. A secondary copy exists at `backend/app/fixtures/replay/lab_v1.json` as a byte-identical copy checked by tests (`backend/tests/test_replay_fixtures.py`) to prevent drift between the backend service and the lab environment.
 
 ---
 
@@ -261,9 +264,9 @@ All `/api/v1` routes require `Authorization: Bearer <PATCHPILOT_ADMIN_TOKEN>`. T
 
 ## ⚠️ Known Limitations & Scope Boundaries
 
-* **Query Parameter Matcher Only:** PatchPilot only implements the exact `query_param_equals` matcher. It evaluates allowlisted query parameters. Regular expressions, request bodies, and headers are not inspected by rules.
+* **Query Parameter Matcher Only:** PatchPilot only implements the exact `query_param_equals` matcher. It evaluates allowlisted query parameters. Regular expressions, request bodies, and headers are not inspected by rules. PatchPilot's rule only inspects the URL query string, so a marker placed in a POST body (or a header) is neither detected nor blocked; the proxy forwards the body unchanged.
 * **PHP Parameter Normalization Differences:** Standard PHP runtimes normalize certain characters in query keys (e.g., converting spaces and dots `.` into underscores `_`) and support array bracket syntax (`demo_attack[]=true`). PatchPilot’s exact matcher uses standard URL parsing and does not emulate PHP's internal parameter mangling.
-* **Simulated Upstream Lab:** `lab/server.py` is a lightweight Python script that returns simulated Apache/PHP headers (`X-Powered-By: PHP/8.2.0`). It only implements `do_GET`. It does not execute real PHP, and returns HTTP 501 for POST requests (which the proxy forwards unchanged).
+* **Simulated Upstream Lab:** `lab/server.py` is a lightweight Python script that returns simulated Apache/PHP headers (`X-Powered-By: PHP/8.2.0`). POST returns HTTP 200 with a small JSON confirmation containing the received body length (it does not echo or interpret the body), and it is still not real PHP.
 * **Single Local Admin Token:** Authentication relies on a single shared secret in memory. There is no multi-user role-based access control (RBAC), database user table, or persistent session management.
 * **Seeded Demo Rule Only:** The MVP includes one seeded demonstration rule (`demo_attack=true`). There is no rule creation, editing, or deletion API endpoint in the MVP.
 * **Advisory AI Integration is Optional:** Advisory analysis defaults to deterministic local benchmark fixtures (`processing_mode=fixture`). The optional `processing_mode=llm` requires a valid third-party API key (`GROQ_API_KEY`) and transmits input text to an external cloud provider.

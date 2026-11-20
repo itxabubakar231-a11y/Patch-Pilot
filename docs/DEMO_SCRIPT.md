@@ -116,7 +116,7 @@ npm run dev
 ### Browser Action — Authenticate on the Dashboard
 1. Open `http://127.0.0.1:5173/` in Google Chrome or Microsoft Edge.
 2. Observe the top header badge: it shows `Transport: API (127.0.0.1:8000)`.
-3. Click the **Unlock Admin** button in the top navigation bar.
+3. Click the **Unlock Admin** button in the top navigation bar (on a narrow window or high browser zoom, the same control is labelled **Unlock**).
 4. In the dialog, enter the admin token configured in Terminal 3:
    ```text
    <YOUR_ADMIN_TOKEN>
@@ -151,11 +151,32 @@ curl.exe -i "http://127.0.0.1:8080/?demo_attack=true"
   * HTTP 200 OK.
   * The response is identical to the normal request; the lab target receives the request unharmed.
 
+### In Terminal 5 (Client), optional POST forwarding check:
+Test that the proxy forwards POST request bodies intact to the upstream lab:
+```powershell
+curl.exe -i -X POST -d "a=1" http://127.0.0.1:8080/
+```
+* **Expected Result:**
+  * **HTTP/1.1 200 OK**
+  * Content-Type: `application/json`
+  * Response Body:
+    ```json
+    {
+      "status": "ok",
+      "message": "POST request received by PatchPilot Lab Target Server",
+      "path": "/",
+      "received_body_length": 3,
+      "simulated_stack": "Apache/2.4.52 + PHP/8.2.0"
+    }
+    ```
+* **Speaker Note:** *"Notice that the proxy forwards POST request bodies unchanged to the upstream lab target. PatchPilot's rule only inspects the URL query string, so a marker placed in a POST body (or a header) is neither detected nor blocked."*
+
 ### Dashboard Verification:
 1. Navigate to **Zone 2 (Traffic Monitor)** by clicking "Traffic Monitor" in the sidebar.
 2. Inspect the audit log table:
    * **Row 1:** `GET /`, Action badge: `Shadow Match`, Status: `200`, Matched Rule: `Rule #1`.
    * **Row 2:** `GET /`, Action badge: `Allowed`, Status: `200`.
+   * *(If optional POST check was sent, an additional row displays `POST /`, Action badge: `Allowed`, Status: `200`)*.
 3. Inspect the four summary metric cards:
    * **Total Requests:** shows loaded count with unit `events`.
    * **Allowed Requests:** shows loaded count with unit `forwarded`.
