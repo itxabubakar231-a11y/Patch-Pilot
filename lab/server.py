@@ -7,34 +7,65 @@ strictly on 127.0.0.1 for local testing.
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import json
 import time
+import urllib.parse
 
 HOST = "127.0.0.1"
 PORT = 8081
+MAX_BODY_SIZE = 1_048_576  # 1 MB maximum allowed request body size
 
 
 class DummyTargetHandler(BaseHTTPRequestHandler):
     server_version = "Apache/2.4.52 (Ubuntu)"
     sys_version = ""
 
-    def _set_headers(self, content_type="text/html", status_code=200):
+    def _set_headers(self, content_type="text/html", status_code=200, extra_headers=None):
         self.send_response(status_code)
         self.send_header("Content-Type", content_type)
         self.send_header("X-Powered-By", "PHP/8.2.0")
         self.send_header("Access-Control-Allow-Origin", "*")
+        if extra_headers:
+            for key, value in extra_headers.items():
+                self.send_header(key, value)
         self.end_headers()
 
-    def do_GET(self):
-        timestamp = time.strftime("[%Y-%m-%d %H:%M:%S]")
-        print(f"{timestamp} Incoming GET request: {self.path} from {self.client_address[0]}")
+    def _send_error_json(self, status_code: int, error_code: str, message: str):
+        """Send a structured JSON error response and close connection to avoid hang/unbounded reads."""
+        self.close_connection = True
+        self._set_headers(
+            content_type="application/json",
+            status_code=status_code,
+            extra_headers={"Connection": "close"},
+        )
+        response = {
+            "error": {
+                "code": error_code,
+                "message": message,
+            },
+            "status": "error",
+            "simulated_stack": "Apache/2.4.52 + PHP/8.2.0",
+        }
+        self.wfile.write(json.dumps(response, indent=2).encode("utf-8"))
 
-        if self.path == "/health":
+    def log_request(self, code="-", size="-"):
+        """Privacy-safe request logger: redacts query parameters from self.requestline."""
+        clean_path = urllib.parse.urlsplit(self.path).path
+        clean_requestline = f"{self.command} {clean_path} {self.request_version}"
+        self.log_message('"%s" %s %s', clean_requestline, str(code), str(size))
+
+    def do_GET(self):
+        parsed = urllib.parse.urlsplit(self.path)
+        clean_path = parsed.path
+        timestamp = time.strftime("[%Y-%m-%d %H:%M:%S]")
+        print(f"{timestamp} Incoming GET request: {clean_path} from {self.client_address[0]}")
+
+        if clean_path == "/health":
             self._set_headers(content_type="application/json")
             response = {
                 "status": "ok",
                 "service": "PatchPilot Lab Target Server",
                 "simulated_stack": "Apache/2.4.52 + PHP/8.2.0",
                 "host": HOST,
-                "port": PORT
+                "port": PORT,
             }
             self.wfile.write(json.dumps(response, indent=2).encode("utf-8"))
             return
@@ -69,14 +100,42 @@ class DummyTargetHandler(BaseHTTPRequestHandler):
         self.wfile.write(html_content.encode("utf-8"))
 
     def do_POST(self):
+        parsed = urllib.parse.urlsplit(self.path)
+        clean_path = parsed.path
         timestamp = time.strftime("[%Y-%m-%d %H:%M:%S]")
-        print(f"{timestamp} Incoming POST request: {self.path} from {self.client_address[0]}")
+        print(f"{timestamp} Incoming POST request: {clean_path} from {self.client_address[0]}")
 
         # Safely determine request body length from Content-Length header
-        try:
-            content_length = int(self.headers.get("Content-Length", 0))
-        except (ValueError, TypeError):
+        raw_cl = self.headers.get("Content-Length")
+        if raw_cl is not None:
+            try:
+                content_length = int(raw_cl.strip())
+            except (ValueError, TypeError):
+                self._send_error_json(
+                    status_code=400,
+                    error_code="BAD_REQUEST",
+                    message="Malformed Content-Length header.",
+                )
+                return
+
+            if content_length < 0:
+                self._send_error_json(
+                    status_code=400,
+                    error_code="BAD_REQUEST",
+                    message="Negative Content-Length header.",
+                )
+                return
+        else:
             content_length = 0
+
+        # Enforce maximum body size without buffering oversized payloads
+        if content_length > MAX_BODY_SIZE:
+            self._send_error_json(
+                status_code=413,
+                error_code="PAYLOAD_TOO_LARGE",
+                message=f"Request body exceeds maximum limit of {MAX_BODY_SIZE} bytes.",
+            )
+            return
 
         # Safely read raw body bytes without executing or interpreting content
         if content_length > 0:
@@ -90,9 +149,9 @@ class DummyTargetHandler(BaseHTTPRequestHandler):
         response = {
             "status": "ok",
             "message": "POST request received by PatchPilot Lab Target Server",
-            "path": self.path,
+            "path": clean_path,
             "received_body_length": received_body_length,
-            "simulated_stack": "Apache/2.4.52 + PHP/8.2.0"
+            "simulated_stack": "Apache/2.4.52 + PHP/8.2.0",
         }
         self.wfile.write(json.dumps(response, indent=2).encode("utf-8"))
 
