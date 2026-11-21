@@ -33,6 +33,11 @@ import {
 } from '../../components/Icons.jsx'
 
 export default function LiveDemoTrafficPanel() {
+  // Comply with React's Rules of Hooks: declare all hooks unconditionally at top level
+  const [isRunning, setIsRunning] = useState(false)
+  const [activeType, setActiveType] = useState(null) // 'normal' | 'marker' | null
+  const [lastResult, setLastResult] = useState(null)
+
   const isDev = Boolean(import.meta.env.DEV)
   const isReal = getApiMode() === 'real'
   const isLocalhost =
@@ -43,10 +48,6 @@ export default function LiveDemoTrafficPanel() {
   if (!isDev || !isReal || !isLocalhost) {
     return null
   }
-
-  const [isRunning, setIsRunning] = useState(false)
-  const [activeType, setActiveType] = useState(null) // 'normal' | 'marker' | null
-  const [lastResult, setLastResult] = useState(null)
 
   const handleSendTraffic = async (type) => {
     if (isRunning) return
@@ -76,7 +77,27 @@ export default function LiveDemoTrafficPanel() {
         description = 'Blocked: Proxy shield intercepted query marker demo_attack=true in ENFORCE mode. Returned HTTP 403 Forbidden without reaching lab.'
         category = 'blocked'
       } else if (status === 502) {
-        description = 'HTTP 502 Bad Gateway: Security proxy on port 8080 is online, but upstream lab server (port 8081) is unreachable.'
+        let data = null
+        try {
+          data = await response.clone().json()
+        } catch {
+          // ignore parsing error if response body is non-JSON
+        }
+
+        const isProxyUnreachable =
+          response.headers.get('x-demo-traffic-error') === 'proxy_unreachable' ||
+          data?.error === 'Security Proxy Unreachable'
+
+        if (isProxyUnreachable) {
+          description = 'HTTP 502 Bad Gateway: Security proxy is unreachable on 127.0.0.1:8080. Verify the PatchPilot reverse proxy service is running.'
+        } else if (data?.error?.code === 'UPSTREAM_UNAVAILABLE' || data?.error?.message?.toLowerCase().includes('lab')) {
+          description = 'HTTP 502 Bad Gateway: Security proxy on port 8080 is online, but upstream lab server (port 8081) is unreachable.'
+        } else {
+          description = 'HTTP 502 Bad Gateway: Security proxy on 127.0.0.1:8080 is unreachable or upstream service failed to respond.'
+        }
+        category = 'error'
+      } else if (status === 504) {
+        description = 'HTTP 504 Gateway Timeout: Security proxy on 127.0.0.1:8080 did not respond within timeout.'
         category = 'error'
       } else {
         description = `HTTP ${status}: Received status code ${status} from security proxy.`
@@ -101,10 +122,10 @@ export default function LiveDemoTrafficPanel() {
         path: targetPath,
         method: 'GET',
         status: null,
-        statusText: 'Connection Refused',
+        statusText: 'Connection Error',
         durationMs,
         timestamp: new Date(),
-        description: 'Connection failure: Unable to reach PatchPilot Security Proxy on 127.0.0.1:8080. Verify the proxy service is running.',
+        description: 'Connection failure: Unable to dispatch demo request. Ensure the development server is active.',
         category: 'error',
       })
     } finally {

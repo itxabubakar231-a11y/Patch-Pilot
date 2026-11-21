@@ -12,69 +12,11 @@
 
 import http from 'node:http'
 import assert from 'node:assert/strict'
+import { createDemoTrafficMiddleware } from '../../../../vite.config.js'
 
 console.log('================================================================')
 console.log('   RUNNING VITE DEV-SERVER PROXY MIDDLEWARE TESTS')
 console.log('================================================================')
-
-// Reusable middleware factory identical to vite.config.js demoTrafficPlugin
-function createDemoTrafficMiddleware(targetPort) {
-  return (req, res, next) => {
-    const urlPath = (req.url || '').split('?')[0]
-    if (urlPath !== '/demo-traffic/normal' && urlPath !== '/demo-traffic/marker') {
-      if (next) return next()
-      res.statusCode = 404
-      res.end('Not Found')
-      return
-    }
-
-    if (req.method !== 'GET') {
-      res.statusCode = 405
-      res.setHeader('Content-Type', 'application/json')
-      res.end(JSON.stringify({ error: 'Method Not Allowed', allowed: ['GET'] }))
-      return
-    }
-
-    const targetPath = urlPath === '/demo-traffic/normal' ? '/' : '/?demo_attack=true'
-    const options = {
-      hostname: '127.0.0.1',
-      port: targetPort,
-      path: targetPath,
-      method: 'GET',
-      headers: {
-        'User-Agent': 'PatchPilot-LiveDemo/1.0',
-        'Accept': 'text/html,application/json,*/*',
-      },
-      timeout: 3000,
-    }
-
-    const proxyReq = http.request(options, (proxyRes) => {
-      res.statusCode = proxyRes.statusCode || 500
-      res.setHeader('Content-Type', proxyRes.headers['content-type'] || 'text/plain')
-      res.setHeader('X-Demo-Traffic-Status', String(proxyRes.statusCode || 500))
-      proxyRes.pipe(res)
-    })
-
-    proxyReq.on('timeout', () => {
-      proxyReq.destroy()
-      res.statusCode = 504
-      res.setHeader('Content-Type', 'application/json')
-      res.end(JSON.stringify({ error: 'Gateway Timeout', message: 'Proxy request timed out on 127.0.0.1:8080' }))
-    })
-
-    proxyReq.on('error', (err) => {
-      res.statusCode = 502
-      res.setHeader('Content-Type', 'application/json')
-      res.end(JSON.stringify({
-        error: 'Security Proxy Unreachable',
-        message: err.message,
-        target: `127.0.0.1:${targetPort}`,
-      }))
-    })
-
-    proxyReq.end()
-  }
-}
 
 async function runTests() {
   // Create an isolated dummy proxy server simulating the port 8080 reverse proxy
@@ -171,9 +113,10 @@ async function runTests() {
       try {
         const res = await fetch(`http://127.0.0.1:${offlinePort}/demo-traffic/normal`)
         assert.equal(res.status, 502, 'Unreachable proxy must return HTTP 502')
+        assert.equal(res.headers.get('x-demo-traffic-error'), 'proxy_unreachable', 'Must signal proxy_unreachable header')
         const json = await res.json()
         assert.equal(json.error, 'Security Proxy Unreachable')
-        console.log('   ✓ Offline proxy truthfully returned HTTP 502 Bad Gateway')
+        console.log('   ✓ Offline proxy truthfully returned HTTP 502 Bad Gateway with proxy_unreachable header')
       } finally {
         offlineViteServer.close()
       }
