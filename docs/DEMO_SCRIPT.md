@@ -304,7 +304,7 @@ curl.exe -i "http://127.0.0.1:8080/?demo_attack=true"
    * **Traffic:** Shows total request count with label `requests`.
    * **Upstream Stack:** Shows `Apache / PHP` when the lab is online.
    * **AI Intelligence:** Shows advisory count with label `advisories`.
-3. In the topology panel, observe the lab badge: displays `Lab Unverified`.
+3. In the topology panel, observe the lab badge: displays `Local Lab (Online)`.
 4. **Speaker Note:** *"Notice the numbers: PatchPilot never populates fake telemetry. If there have been zero blocked requests on a clean database, it honestly displays 0 rather than simulating fake activity."*
 
 ### Zone 4 (AI Advisories & Web Speech TTS)
@@ -364,13 +364,9 @@ curl.exe -i http://127.0.0.1:8080/
    * Duration: longer response time (about 2 s on Windows due to connection timeout).
 2. In **Zone 1 (Security Overview)**:
    * The backend reports `lab.status = "offline"`.
-   * The **Upstream Stack** card changes from `Apache / PHP` (lab online) to `Upstream Lab` (`Target: 127.0.0.1:8081`).
-   * The topology badge stays `Lab Unverified` in both states.
+   * After the dashboard's ~5 second refresh, the Zone 1 topology badge shows `Lab Offline`, and the **Upstream Stack** card changes from `Apache / PHP` to `Upstream Lab` (`Target: 127.0.0.1:8081`).
 
-> [!NOTE]
-> **Known issue:** The dashboard reads `lab.verified`, a property that `docs/API.md` does not define. As a result, the topology badge remains `Lab Unverified` regardless of whether the lab is online or offline (reported to Member 3).
-
-When `lab/server.py` is restarted in Terminal 1, the proxy recovers automatically by itself.
+When `lab/server.py` is restarted in Terminal 1, the proxy recovers automatically by itself and the badge returns to `Local Lab (Online)` without restarting anything else.
 
 3. **Speaker Note:** *"The proxy handles target outages with an audit-safe 502 Bad Gateway. It never crashes, never drops its management connection, and preserves accurate failure records in SQLite. When the lab service restarts, the proxy recovers automatically."*
 
@@ -404,7 +400,7 @@ Capture these specific screenshots during the rehearsal or presentation for docu
 | **E5** | Trailing Delimiter Handling | Terminal 5 (curl) | `curl.exe -i "http://127.0.0.1:8080/?demo_attack=true&z=?"` returning HTTP 403. |
 | **E6** | Instant Rollback | Zone 3 (Shield Controls) | Amber button `Rollback to Shadow`, modal `Confirm Emergency Rollback` -> `Confirm Rollback`, feedback `Operation Completed: Enforcement disabled; shadow logging continues.`. |
 | **E7** | Multilingual & Audio Provenance | Zone 4 (AI Advisories) | Radio `Deterministic Fixture (Safe)`, button `Analyze Advisory`, banner `Deterministic Demo Fixture ... Input text was not processed by live AI.`, badges `FIXTURE ACTIVE`, `MODE: fixture`, `Source: demo (fixture)`, button `Listen`, badge `System Voice`. |
-| **E8** | Upstream Lab Outage | Terminal 5 & Zone 2 | Terminal showing `502 Bad Gateway` and Zone 2 displaying `Upstream Error (502)`. |
+| **E8** | Upstream Lab Outage | Terminal 5, Zone 2 & Zone 1 | Terminal showing `502 Bad Gateway`, Zone 2 displaying `Upstream Error (502)`, and Zone 1 displaying `Lab Offline` topology badge and `Upstream Lab` stack card. |
 
 ---
 
