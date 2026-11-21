@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test:speech": "node src/features/advisories/__tests__/SpeechControl.test.mjs"
+    "test:speech": "node src/features/advisories/__tests__/SpeechControl.test.mjs",
+    "test:middleware": "node src/features/dashboard/__tests__/LiveDemoTrafficMiddleware.test.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",
