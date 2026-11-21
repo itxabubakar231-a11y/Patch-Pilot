@@ -6,12 +6,13 @@ import http from 'node:http'
  * Core HTTP proxy middleware handler for live demo traffic.
  *
  * Real destination is fixed to 127.0.0.1:8080 by default.
- * Dynamic target ports are accepted exclusively for isolated automated unit tests.
+ * Dynamic target ports and timeouts are accepted exclusively for isolated automated unit tests.
  *
  * @param {number} [targetPort=8080] Destination port on 127.0.0.1
+ * @param {number} [timeoutMs=4000] Request timeout in milliseconds
  * @returns {import('node:http').RequestListener} Connect/Vite-compatible middleware
  */
-export function createDemoTrafficMiddleware(targetPort = 8080) {
+export function createDemoTrafficMiddleware(targetPort = 8080, timeoutMs = 4000) {
   return (req, res, next) => {
     const urlPath = (req.url || '').split('?')[0]
     if (urlPath !== '/demo-traffic/normal' && urlPath !== '/demo-traffic/marker') {
@@ -40,10 +41,29 @@ export function createDemoTrafficMiddleware(targetPort = 8080) {
         'User-Agent': 'PatchPilot-LiveDemo/1.0',
         'Accept': 'text/html,application/json,*/*',
       },
-      timeout: 4000,
+      timeout: timeoutMs,
+    }
+
+    let responded = false
+
+    const sendResponse = (statusCode, headers, body) => {
+      if (responded || res.headersSent || res.writableEnded) {
+        return
+      }
+      responded = true
+      res.statusCode = statusCode
+      for (const [key, value] of Object.entries(headers || {})) {
+        res.setHeader(key, value)
+      }
+      res.end(body)
     }
 
     const proxyReq = http.request(options, (proxyRes) => {
+      if (responded || res.headersSent || res.writableEnded) {
+        proxyRes.resume()
+        return
+      }
+      responded = true
       res.statusCode = proxyRes.statusCode || 500
       res.setHeader('Content-Type', proxyRes.headers['content-type'] || 'text/plain')
       res.setHeader('X-Demo-Traffic-Status', String(proxyRes.statusCode || 500))
@@ -52,10 +72,10 @@ export function createDemoTrafficMiddleware(targetPort = 8080) {
 
     proxyReq.on('timeout', () => {
       proxyReq.destroy()
-      res.statusCode = 504
-      res.setHeader('Content-Type', 'application/json')
-      res.setHeader('X-Demo-Traffic-Error', 'proxy_timeout')
-      res.end(JSON.stringify({
+      sendResponse(504, {
+        'Content-Type': 'application/json',
+        'X-Demo-Traffic-Error': 'proxy_timeout',
+      }, JSON.stringify({
         error: 'Gateway Timeout',
         message: `Proxy request timed out on 127.0.0.1:${targetPort}`,
         target: `127.0.0.1:${targetPort}`,
@@ -63,14 +83,20 @@ export function createDemoTrafficMiddleware(targetPort = 8080) {
     })
 
     proxyReq.on('error', (err) => {
-      res.statusCode = 502
-      res.setHeader('Content-Type', 'application/json')
-      res.setHeader('X-Demo-Traffic-Error', 'proxy_unreachable')
-      res.end(JSON.stringify({
+      sendResponse(502, {
+        'Content-Type': 'application/json',
+        'X-Demo-Traffic-Error': 'proxy_unreachable',
+      }, JSON.stringify({
         error: 'Security Proxy Unreachable',
         message: err.message,
         target: `127.0.0.1:${targetPort}`,
       }))
+    })
+
+    req.on('close', () => {
+      if (!responded) {
+        proxyReq.destroy()
+      }
     })
 
     proxyReq.end()
@@ -85,11 +111,11 @@ export function createDemoTrafficMiddleware(targetPort = 8080) {
  *
  * Real destination is strictly fixed to 127.0.0.1:8080.
  */
-export function demoTrafficPlugin(targetPort = 8080) {
+export function demoTrafficPlugin(targetPort = 8080, timeoutMs = 4000) {
   return {
     name: 'patchpilot-demo-traffic-proxy',
     configureServer(server) {
-      server.middlewares.use(createDemoTrafficMiddleware(targetPort))
+      server.middlewares.use(createDemoTrafficMiddleware(targetPort, timeoutMs))
     },
   }
 }

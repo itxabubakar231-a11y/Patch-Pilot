@@ -109,7 +109,7 @@ export default function LiveDemoTrafficPanel() {
         path: targetPath,
         method: 'GET',
         status,
-        statusText: response.statusText || (status === 200 ? 'OK' : status === 403 ? 'Forbidden' : status === 502 ? 'Bad Gateway' : 'Response'),
+        statusText: response.statusText || (status === 200 ? 'OK' : status === 403 ? 'Forbidden' : status === 502 ? 'Bad Gateway' : status === 504 ? 'Gateway Timeout' : 'Response'),
         durationMs,
         timestamp: new Date(),
         description,
@@ -266,7 +266,13 @@ export default function LiveDemoTrafficPanel() {
                   <span>HTTP 502 Bad Gateway</span>
                 </span>
               )}
-              {lastResult.status !== 200 && lastResult.status !== 403 && lastResult.status !== 502 && (
+              {lastResult.status === 504 && (
+                <span className="inline-flex items-center space-x-1.5 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-mono font-bold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                  <span>HTTP 504 Gateway Timeout</span>
+                </span>
+              )}
+              {lastResult.status !== 200 && lastResult.status !== 403 && lastResult.status !== 502 && lastResult.status !== 504 && (
                 <span className="inline-flex items-center space-x-1.5 px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-mono font-bold">
                   <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
                   <span>{lastResult.status ? `HTTP ${lastResult.status}` : 'Connection Refused'}</span>

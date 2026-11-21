@@ -8,6 +8,7 @@
  * 3. Query parameter injection attempt is strictly stripped (target remains '/').
  * 4. Non-GET methods (POST) are rejected with HTTP 405 Method Not Allowed.
  * 5. Proxy/upstream outage returns clean HTTP 502 Bad Gateway without hanging.
+ * 6. Stalled proxy timeout returns clean HTTP 504 Gateway Timeout without ERR_HTTP_HEADERS_SENT.
  */
 
 import http from 'node:http'
@@ -122,8 +123,49 @@ async function runTests() {
       }
     }
 
+    // -------------------------------------------------------------------------
+    // TEST 6: Proxy timeout returns 504 Gateway Timeout without ERR_HTTP_HEADERS_SENT
+    // -------------------------------------------------------------------------
+    console.log('\n[TEST 6] Stalled proxy timeout returns 504 Gateway Timeout...')
+    {
+      // Create a stalled HTTP server that accepts connections but never responds
+      const stalledServer = http.createServer((req, res) => {
+        // Deliberately hold connection open without writing response
+      })
+      await new Promise((resolve) => stalledServer.listen(0, '127.0.0.1', resolve))
+      const stalledPort = stalledServer.address().port
+
+      // Create isolated test Vite server pointing to stalledPort with a short 200ms timeout
+      const timeoutViteServer = http.createServer(createDemoTrafficMiddleware(stalledPort, 200))
+      await new Promise((resolve) => timeoutViteServer.listen(0, '127.0.0.1', resolve))
+      const timeoutVitePort = timeoutViteServer.address().port
+
+      let uncaughtError = null
+      const onUncaught = (err) => {
+        uncaughtError = err
+      }
+      process.on('uncaughtException', onUncaught)
+
+      try {
+        const res = await fetch(`http://127.0.0.1:${timeoutVitePort}/demo-traffic/normal`)
+        assert.equal(res.status, 504, 'Stalled proxy must return HTTP 504 Gateway Timeout')
+        assert.equal(res.headers.get('x-demo-traffic-error'), 'proxy_timeout', 'Must signal proxy_timeout header')
+        const json = await res.json()
+        assert.equal(json.error, 'Gateway Timeout')
+
+        // Wait an additional event loop turn to verify proxyReq.destroy() does not trigger ERR_HTTP_HEADERS_SENT
+        await new Promise((resolve) => setTimeout(resolve, 100))
+        assert.equal(uncaughtError, null, 'Must not throw uncaught ERR_HTTP_HEADERS_SENT after destroy()')
+        console.log('   ✓ Stalled proxy returned HTTP 504 Gateway Timeout without uncaught exception')
+      } finally {
+        process.off('uncaughtException', onUncaught)
+        timeoutViteServer.close()
+        stalledServer.close()
+      }
+    }
+
     console.log('\n================================================================')
-    console.log('   ALL 5 VITE PROXY MIDDLEWARE TESTS PASSED (0 FAILURES)!')
+    console.log('   ALL 6 VITE PROXY MIDDLEWARE TESTS PASSED (0 FAILURES)!')
     console.log('================================================================\n')
   } finally {
     dummy8080.close()
