@@ -471,6 +471,28 @@ export async function analyzeAdvisory(payload) {
   return deepClone(mockAdvisoriesState)
 }
 
+/**
+ * Send predefined live demo traffic request through the Vite dev-server loopback proxy to port 8080.
+ * Narrowly scoped strictly to 'normal' (GET /) or 'marker' (GET /?demo_attack=true).
+ * Available only in local development real mode.
+ * @param {'normal' | 'marker'} type
+ * @returns {Promise<Response>}
+ */
+export const sendDemoTraffic = import.meta.env.DEV
+  ? async function (type) {
+      if (type !== 'normal' && type !== 'marker') {
+        throw new Error(`Invalid demo traffic type: ${type}. Expected 'normal' or 'marker'.`)
+      }
+      const endpoint = type === 'normal' ? '/demo-traffic/normal' : '/demo-traffic/marker'
+      return await fetch(endpoint, {
+        method: 'GET',
+        headers: {
+          'Accept': 'text/html,application/json,*/*',
+        },
+      })
+    }
+  : undefined
+
 // Default export bundled object
 export default {
   // Token management
@@ -494,6 +516,7 @@ export default {
   setProxyMode,
   rollbackProxy,
   analyzeAdvisory,
+  ...(import.meta.env.DEV ? { sendDemoTraffic } : {}),
 
   // Error class
   ApiError,
