@@ -38,6 +38,7 @@ import {
   IconDocument,
   IconClock,
 } from '../../components/Icons.jsx'
+import LiveDemoTrafficPanel from './LiveDemoTrafficPanel.jsx'
 
 export default function ProxyShieldControls() {
   const [proxyStatus, setProxyStatus] = useState(null)
@@ -943,6 +944,9 @@ export default function ProxyShieldControls() {
             <span>{isRollingBack ? 'Rolling back...' : 'Rollback to Shadow'}</span>
           </button>
         </section>
+
+        {/* 6B. Live Demo Traffic Controls (Strictly Gated: Vite Dev Mode, Real Mode, Localhost Only) */}
+        <LiveDemoTrafficPanel />
 
         {/* 7. Replay Gate & Security Rules Table */}
         <section
